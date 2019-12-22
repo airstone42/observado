@@ -64,7 +64,7 @@ class Note(object):
 
 
 class Chord(object):
-    chord_pattern = r'([A-G|a-g][#|b]?)((add6|7|maj7)?sus(2|4)?|ø7?|((m|aug)?add6)|mmaj7|maj7|m|9|11|13|((aug|dim)?(' \
+    chord_pattern = r'([A-G|a-g][#|b]?)((add6|7|maj7)?sus(2|4)?|((m|aug)?add6)|m?maj7|[m|ø]7?|9|11|13|((aug|dim)?(' \
                     r'7|maj7|add9)?)?)/?([A-G|a-g][#|b]?)?'
 
     def __init__(self, notation: str):
@@ -73,8 +73,8 @@ class Chord(object):
                 raise ValueError
             groups = [x for x in re.split(self.chord_pattern, notation) if x]
             self.root: Note = Note(groups[0])
-            self.quality: str = groups[1]
-            self.notation: str = str(self.root) + self.quality
+            self.quality: str = groups[1] if len(groups) != 1 else 'M'
+            self.notation: str = str(self.root) + (self.quality if self.quality != 'M' else '')
             if not re.match(r'.*/.*', notation):
                 self.bass: Note = self.root
             else:

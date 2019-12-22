@@ -26,6 +26,8 @@ class ChordTestCase(unittest.TestCase):
     def test_chords(self):
         self.assertRaises(ValueError, Chord, 'C##')
         self.assertRaises(ValueError, Chord, 'C#/E#')
+        self.assertIsInstance(Chord('C'), Chord)
+        self.assertIsInstance(Chord('Am7'), Chord)
         self.assertIsInstance(Chord('Fmmaj7'), Chord)
         self.assertIsInstance(Chord('Abmaj7sus2'), Chord)
         self.assertIsInstance(Chord('C#dim7/Gb'), Chord)

@@ -3,6 +3,7 @@ import re
 import numpy as np
 
 
+# Capitalize musical notes name.
 def note_upper(name: str) -> str:
     try:
         if len(name) > 2:
@@ -52,9 +53,11 @@ class Note(object):
         except ValueError:
             return False
 
+    # Check if note name is legal.
     def _check(self, name: str) -> bool:
         return True if note_upper(name) in self.notes else False
 
+    # Get position by note.
     def value(self) -> int:
         note = self.alt_table[self._note] if self._note in self.alt_table else self._note
         return self.value_table[note]
@@ -88,6 +91,7 @@ class Chord(object):
 
 
 class Template(object):
+    # Chord template for C
     table = {'M': np.array([1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0]),
              'm': np.array([1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0]),
              'aug': np.array([1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0]),
@@ -110,6 +114,7 @@ class Template(object):
             self.available: bool = False
             if self.chord.quality in self.table and self.chord.root == self.chord.bass:
                 self.available = True
+                # Transpose by notes.
                 self.array = np.roll(self.table[self.chord.quality], self.chord.root.value())
         except ValueError as e:
             raise e

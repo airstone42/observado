@@ -28,7 +28,7 @@ class Note(object):
         try:
             if not self._check(name):
                 raise ValueError
-            self._note = note_upper(name)
+            self._note: str = note_upper(name)
         except ValueError as e:
             raise e
 
@@ -69,13 +69,13 @@ class Chord(object):
             if not re.fullmatch(self.chord_pattern, notation):
                 raise ValueError
             groups = [x for x in re.split(self.chord_pattern, notation) if x]
-            self.root = Note(groups[0])
-            self.quality = groups[1]
-            self.notation = str(self.root) + self.quality
+            self.root: Note = Note(groups[0])
+            self.quality: str = groups[1]
+            self.notation: str = str(self.root) + self.quality
             if not re.match(r'.*/.*', notation):
-                self.bass = self.root
+                self.bass: Note = self.root
             else:
-                self.bass = Note(groups[-1])
+                self.bass: Note = Note(groups[-1])
                 self.notation += '/' + str(self.bass)
         except ValueError as e:
             raise e

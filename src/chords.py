@@ -1,5 +1,7 @@
 import re
 
+import numpy as np
+
 
 def note_upper(name: str) -> str:
     try:
@@ -83,3 +85,37 @@ class Chord(object):
 
     def __str__(self):
         return 'Chord({})'.format(self.notation)
+
+
+class Template(object):
+    table = {'M': np.array([1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0]),
+             'm': np.array([1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0]),
+             'aug': np.array([1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0]),
+             'dim': np.array([1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0]),
+             '7': np.array([1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0]),
+             'm7': np.array([1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0]),
+             'maj7': np.array([1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1]),
+             'dim7': np.array([1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0]),
+             'ø7': np.array([1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0]),
+             '9': np.array([1, 0, 1, 0, 1, 0, 0, 1, 0, 0, 1, 0]),
+             'add9': np.array([1, 0, 1, 0, 1, 0, 0, 1, 0, 0, 0, 0]),
+             'add6': np.array([1, 0, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0]),
+             'sus2': np.array([1, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0]),
+             'sus4': np.array([1, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0]), }
+
+    def __init__(self, chord):
+        try:
+            self.array: np.ndarray = np.array([])
+            self.chord: Chord = chord if isinstance(chord, Chord) else Chord(chord)
+            self.available: bool = False
+            if self.chord.quality in self.table and self.chord.root == self.chord.bass:
+                self.available = True
+                self.array = np.roll(self.table[self.chord.quality], self.chord.root.value())
+        except ValueError as e:
+            raise e
+
+    def __repr__(self):
+        return 'Template({!r})'.format(self.__dict__)
+
+    def __str__(self):
+        return 'Template({}, {})'.format(str(self.chord), str(self.array))

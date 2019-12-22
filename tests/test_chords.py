@@ -36,6 +36,17 @@ class ChordTestCase(unittest.TestCase):
         self.assertEqual(chord.bass, Note('A'))
         self.assertEqual(chord.quality, 'maj7sus4')
 
+    def test_templates(self):
+        self.assertRaises(ValueError, Template, 'C#/E#')
+        self.assertIsInstance(Template('Fmmaj7'), Template)
+        self.assertIsInstance(Template(Chord('Abmaj7sus2')), Template)
+        self.assertFalse(Template(Chord('Abmaj7sus2')).available)
+        self.assertFalse(Template(Chord('Cmaj7/G')).available)
+        self.assertTrue(Template(Chord('Cmaj7/C')).available)
+        template = Template(Chord('Cmaj7'))
+        self.assertTrue(template.available)
+        self.assertEqual(str(template.array), str(np.array([1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1])))
+
 
 if __name__ == '__main__':
     unittest.main()

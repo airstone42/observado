@@ -3,16 +3,6 @@ import re
 import numpy as np
 
 
-# Capitalize musical notes name.
-def note_upper(name: str) -> str:
-    try:
-        if len(name) > 2:
-            raise ValueError
-        return name[0].upper() + name[1] if len(name) == 2 else name[0].upper()
-    except ValueError as e:
-        raise e
-
-
 class Note(object):
     value_table = {'C': 0, 'C#': 1, 'D': 2, 'D#': 3, 'E': 4, 'F': 5, 'F#': 6, 'G': 7, 'G#': 8, 'A': 9, 'A#': 10,
                    'B': 11}
@@ -25,11 +15,21 @@ class Note(object):
                                       for x in y)) if x not in ('B#', 'Cb', 'E#', 'Fb')),
                    key=lambda x, v=value_table, t=alt_table: v[x] if x not in t else v[t[x]])
 
+    # Capitalize musical notes name.
+    @staticmethod
+    def upper(name: str) -> str:
+        try:
+            if len(name) > 2:
+                raise ValueError
+            return name[0].upper() + name[1] if len(name) == 2 else name[0].upper()
+        except ValueError as e:
+            raise e
+
     def __init__(self, name: str):
         try:
             if not self._check(name):
                 raise ValueError
-            self._note: str = note_upper(name)
+            self._note: str = self.upper(name)
         except ValueError as e:
             raise e
 
@@ -46,7 +46,7 @@ class Note(object):
             ivt_table = {v: k for k, v in self.alt_table.items()}
             if re.match(pattern, other):
                 other = [x for x in re.split(pattern, other) if x][0]
-            other = note_upper(other)
+            other = self.upper(other)
             return True if self._note == other or (
                     self._note in self.alt_table and self.alt_table[self._note] == other) or (
                                    self._note in ivt_table and ivt_table[self._note] == other) else False
@@ -55,7 +55,7 @@ class Note(object):
 
     # Check if note name is legal.
     def _check(self, name: str) -> bool:
-        return True if note_upper(name) in self.notes else False
+        return True if self.upper(name) in self.notes else False
 
     # Get position by note.
     def value(self) -> int:

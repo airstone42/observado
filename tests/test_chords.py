@@ -6,10 +6,10 @@ from src.chords import *
 
 class ChordTestCase(unittest.TestCase):
     def test_note_upper(self):
-        self.assertEqual(note_upper('Bb'), 'Bb')
-        self.assertEqual(note_upper('c#'), 'C#')
-        self.assertEqual(note_upper('e'), 'E')
-        self.assertRaises(ValueError, note_upper, 'C##')
+        self.assertEqual(Note.upper('Bb'), 'Bb')
+        self.assertEqual(Note.upper('c#'), 'C#')
+        self.assertEqual(Note.upper('e'), 'E')
+        self.assertRaises(ValueError, Note.upper, 'C##')
 
     def test_notes(self):
         self.assertRaises(ValueError, Note, 'C##')

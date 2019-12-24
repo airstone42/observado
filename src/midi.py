@@ -1,11 +1,10 @@
-from src.chords import *
+from src.chords import Pattern
 
 
 class MIDIPattern(Pattern):
-    # MIDI note numbers of C3 to B3, C4 to B4, C5 to B5
+    # MIDI note numbers of C3 to B3, C4 to B4
     bass = [x for x in range(48, 59 + 1)]
     alto = [x for x in range(60, 71 + 1)]
-    treble = [x for x in range(72, 83 + 1)]
 
     def __init__(self, chord):
         super().__init__(chord)
@@ -15,8 +14,7 @@ class MIDIPattern(Pattern):
         bass = [self.bass[self.chord.bass.value()]]
         # Pick notes by matching array.
         alto = [self.alto[x] for x in range(len(self.array)) if self.array[x]]
-        treble = [self.treble[self.chord.bass.value()]]
-        return sorted(bass + alto + treble, reverse=True)
+        return sorted(bass + alto, reverse=True)
 
     def __repr__(self):
         return 'MIDIPattern({!r})'.format(self.__dict__)

@@ -1,7 +1,7 @@
 from src.chords import *
 
 
-class MIDITemplate(Template):
+class MIDIPattern(Pattern):
     # MIDI note numbers of C3 to B3, C4 to B4, C5 to B5
     bass = [x for x in range(48, 59 + 1)]
     alto = [x for x in range(60, 71 + 1)]
@@ -19,7 +19,7 @@ class MIDITemplate(Template):
         return sorted(bass + alto + treble, reverse=True)
 
     def __repr__(self):
-        return 'MIDITemplate({!r})'.format(self.__dict__)
+        return 'MIDIPattern({!r})'.format(self.__dict__)
 
     def __str__(self):
-        return 'MIDITemplate({}, {})'.format(str(self.chord), str(self.component))
+        return 'MIDIPattern({}, {})'.format(str(self.chord), str(self.component))

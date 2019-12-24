@@ -64,14 +64,14 @@ class Note(object):
 
 
 class Chord(object):
-    chord_pattern = r'([A-G|a-g][#|b]?)((add6|7|maj7)?sus(2|4)?|((m|aug)?add6)|m?maj7|[m|ø]7?|9|11|13|((aug|dim)?(' \
-                    r'7|maj7|add9)?)?)/?([A-G|a-g][#|b]?)?'
+    pattern = r'([A-G|a-g][#|b]?)((add6|7|maj7)?sus(2|4)?|((m|aug)?add6)|m?maj7|[m|ø]7?|9|11|13|((aug|dim)?(' \
+              r'7|maj7|add9)?)?)/?([A-G|a-g][#|b]?)?'
 
     def __init__(self, notation: str):
         try:
-            if not re.fullmatch(self.chord_pattern, notation):
+            if not re.fullmatch(self.pattern, notation):
                 raise ValueError
-            groups = [x for x in re.split(self.chord_pattern, notation) if x]
+            groups = [x for x in re.split(self.pattern, notation) if x]
             self.root: Note = Note(groups[0])
             self.quality: str = groups[1] if len(groups) != 1 else 'M'
             self.notation: str = str(self.root) + (self.quality if self.quality != 'M' else '')
@@ -90,8 +90,8 @@ class Chord(object):
         return 'Chord({})'.format(self.notation)
 
 
-class Template(object):
-    # Chord template for C
+class Pattern(object):
+    # Chord pattern for C
     table = {'M': np.array([1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0]),
              'm': np.array([1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0]),
              'aug': np.array([1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0]),
@@ -120,7 +120,7 @@ class Template(object):
             raise e
 
     def __repr__(self):
-        return 'Template({!r})'.format(self.__dict__)
+        return 'Pattern({!r})'.format(self.__dict__)
 
     def __str__(self):
-        return 'Template({}, {})'.format(str(self.chord), str(self.array))
+        return 'Pattern({}, {})'.format(str(self.chord), str(self.array))

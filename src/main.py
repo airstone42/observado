@@ -5,15 +5,15 @@ from src.chords import *
 
 
 def basic_generate():
-    # Calculate all chords by combine notes and chord templates
+    # Calculate all chords by combine notes and chord patterns.
     all_chords = [(lambda x, y: x + y if y != 'M' else x)(x, y) for x in Note.notes if x not in Note.alt_table.keys()
-                  for y in Template.table.keys()]
+                  for y in Pattern.table.keys()]
     data = {'basic': []}
     for i in all_chords:
-        t = Template(i)
-        if t.available:
-            item = {'notation': t.chord.notation, 'array': t.array.tolist(), 'root': str(t.chord.root),
-                    'quality': t.chord.quality, 'bass': str(t.chord.bass)}
+        p = Pattern(i)
+        if p.available:
+            item = {'notation': p.chord.notation, 'array': p.array.tolist(), 'root': str(p.chord.root),
+                    'quality': p.chord.quality, 'bass': str(p.chord.bass)}
             data['basic'].append(item)
     try:
         with open('../data/basic.json', 'xt') as f:

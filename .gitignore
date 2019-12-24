@@ -2,3 +2,7 @@ __pycache__
 .env
 .idea
 .vscode
+
+/data/midi/*
+
+!/data/midi/.gitkeep

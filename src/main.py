@@ -19,6 +19,7 @@ def dir_check():
         if not os.path.exists(os.path.join(dirname, subdir)):
             os.mkdir(os.path.join(dirname, subdir))
 
+    print('Checking directories...')
     for i in ['../data', '../data/midi', '../data/wave']:
         check_and_make(i)
 
@@ -33,6 +34,7 @@ def basic_generate():
             data['basic'].append(item)
     try:
         with open(os.path.join(dirname, '../data/basic.json'), 'xt') as f:
+            print('Generating basic patterns...')
             json.dump(data, f)
     except FileExistsError:
         pass
@@ -47,12 +49,13 @@ def midi_generate():
             filename = p.pattern.chord.notation + '_' + p.inst
             p.write(os.path.join(dirname, '../data/midi/{}.mid'.format(filename)))
 
+    print('Generating MIDI files...')
     with futures.ThreadPoolExecutor(max_workers=12) as pool:
         pool.map(generate, all_chords)
 
 
 def wave_generate():
-    def generate(chord):
+    def generate(chord, child):
         for i in MIDIContent.inst_table:
             p = MIDIContent(chord, i)
             filename = p.pattern.chord.notation + '_' + p.inst
@@ -62,10 +65,24 @@ def wave_generate():
                 # Problems when running on Windows for 'ø7' chord.
                 if 'ø7' in wave_name:
                     wave_name = wave_name.replace('ø7', 'm7b5')
-                subprocess.run(['timidity', midi_name, '-Ow', '-o', wave_name], stdout=subprocess.DEVNULL)
+                subprocess.run([child, midi_name, '-Ow', '-o', wave_name], stdout=subprocess.DEVNULL)
 
+    # Check timidity.
+    child = 'timidity'
+    try:
+        subprocess.run([child], stdout=subprocess.DEVNULL)
+    except FileNotFoundError:
+        try:
+            child = 'timidity++'
+            subprocess.run([child], stdout=subprocess.DEVNULL)
+        except FileNotFoundError:
+            print('Error when generating WAV files.')
+            print('Make sure timidity is installed.')
+            return
+
+    print('Generating WAV files...')
     with futures.ThreadPoolExecutor(max_workers=12) as pool:
-        pool.map(generate, all_chords)
+        pool.map(generate, all_chords, child)
 
     # Fix 'ø7' filename after generation.
     for _, _, files in os.walk(os.path.join(dirname, '../data/wave/')):
@@ -80,6 +97,7 @@ def main():
     basic_generate()
     midi_generate()
     wave_generate()
+    print('Done.')
 
 
 if __name__ == '__main__':

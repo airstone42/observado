@@ -67,6 +67,9 @@ class MIDIContent(object):
     def _track(self) -> str:
         instrument = 'c0' + '{:02x}'.format(self.inst_table[self.inst]) + '00'
 
+        # 120 bpm
+        tempo = 'ff 51 03 09 27 c0 00'
+
         # Press keys
         event = ''.join(x for x in ['90' + '{:02x}'.format(x) + '4000' for x in self.pattern.component])
         event = event[:event.rfind('00')] + '8800'
@@ -75,7 +78,7 @@ class MIDIContent(object):
 
         end = 'ff 2f 00'
 
-        data = instrument + event + end
+        data = instrument + tempo + event + end
         thead = self._MTrk_type + '{:08x}'.format(len(bytes.fromhex(data)) + 1) + '00'
         return thead + data
 

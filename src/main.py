@@ -55,7 +55,7 @@ def midi_generate():
 
 
 def wave_generate():
-    def generate(chord, child):
+    def generate(chord):
         for i in MIDIContent.inst_table:
             p = MIDIContent(chord, i)
             filename = p.pattern.chord.notation + '_' + p.inst
@@ -82,7 +82,7 @@ def wave_generate():
 
     print('Generating WAV files...')
     with futures.ThreadPoolExecutor(max_workers=12) as pool:
-        pool.map(generate, all_chords, child)
+        pool.map(generate, all_chords)
 
     # Fix 'ø7' filename after generation.
     for _, _, files in os.walk(os.path.join(dirname, '../data/wave/')):

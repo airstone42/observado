@@ -68,11 +68,11 @@ class MIDIContent(object):
         instrument = 'c0' + '{:02x}'.format(self.inst_table[self.inst]) + '00'
 
         # 120 bpm
-        tempo = 'ff 51 03 09 27 c0 00'
+        tempo = 'ff 51 03 07 A1 20 00'
 
         # Press keys
         event = ''.join(x for x in ['90' + '{:02x}'.format(x) + '4000' for x in self.pattern.component])
-        event = event[:event.rfind('00')] + '8800'
+        event = event[:event.rfind('00')] + '8400'
         # Release keys
         event += ''.join(x for x in ['80' + '{:02x}'.format(x) + '4000' for x in self.pattern.component])
 

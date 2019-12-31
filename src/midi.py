@@ -24,7 +24,7 @@ class MIDIPattern(Pattern):
 
 
 # For generating chord sounds for several seconds with different instruments.
-class MIDIContent(object):
+class SingleChordContent(object):
     # MIDI header, <'Mthd'><length><format><number of tracks><division>
     _MThd: str = '4d 54 68 64 00 00 00 06 00 01 00 01 00 80'
 

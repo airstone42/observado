@@ -2,18 +2,15 @@ import re
 
 import numpy as np
 
+from src import utils
+
 
 class Note(object):
-    value_table = {'C': 0, 'C#': 1, 'D': 2, 'D#': 3, 'E': 4, 'F': 5, 'F#': 6, 'G': 7, 'G#': 8, 'A': 9, 'A#': 10,
-                   'B': 11}
+    value_table = utils.note_values
 
-    alt_table = {'Db': 'C#', 'Eb': 'D#', 'Gb': 'F#', 'Ab': 'G#', 'Bb': 'A#'}
+    alt_table = utils.note_alts
 
-    notes = sorted(tuple(x for x in (x for x in
-                                     (x for y in
-                                      ((chr(x), chr(x) + '#', chr(x) + 'b') for x in range(ord('A'), ord('G') + 1))
-                                      for x in y)) if x not in ('B#', 'Cb', 'E#', 'Fb')),
-                   key=lambda x, v=value_table, t=alt_table: v[x] if x not in t else v[t[x]])
+    notes = utils.all_notes
 
     # Capitalize musical notes name.
     @staticmethod
@@ -91,21 +88,7 @@ class Chord(object):
 
 
 class Pattern(object):
-    # Chord pattern for C
-    table = {'M': np.array([1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0]),
-             'm': np.array([1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0]),
-             'aug': np.array([1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0]),
-             'dim': np.array([1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0]),
-             '7': np.array([1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0]),
-             'm7': np.array([1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0]),
-             'maj7': np.array([1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1]),
-             'dim7': np.array([1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0]),
-             'ø7': np.array([1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0]),
-             '9': np.array([1, 0, 1, 0, 1, 0, 0, 1, 0, 0, 1, 0]),
-             'add9': np.array([1, 0, 1, 0, 1, 0, 0, 1, 0, 0, 0, 0]),
-             'add6': np.array([1, 0, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0]),
-             'sus2': np.array([1, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0]),
-             'sus4': np.array([1, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0]), }
+    table = utils.chord_table
 
     def __init__(self, chord):
         try:

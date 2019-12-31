@@ -11,11 +11,11 @@ class MIDITestCase(unittest.TestCase):
         self.assertTrue(MIDIPattern('C').available)
 
     def test_content(self):
-        self.assertRaises(ValueError, MIDIContent, 'C##')
-        self.assertIsInstance(MIDIContent('Am7'), MIDIContent)
-        self.assertIsInstance(MIDIContent(Chord('Am7')), MIDIContent)
-        self.assertIsInstance(MIDIContent(Pattern(Chord('Am7'))), MIDIContent)
-        self.assertIsInstance(MIDIContent(MIDIPattern(Chord('Am7'))), MIDIContent)
+        self.assertRaises(ValueError, SingleChordContent, 'C##')
+        self.assertIsInstance(SingleChordContent('Am7'), SingleChordContent)
+        self.assertIsInstance(SingleChordContent(Chord('Am7')), SingleChordContent)
+        self.assertIsInstance(SingleChordContent(Pattern(Chord('Am7'))), SingleChordContent)
+        self.assertIsInstance(SingleChordContent(MIDIPattern(Chord('Am7'))), SingleChordContent)
 
 
 if __name__ == '__main__':

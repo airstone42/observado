@@ -4,14 +4,12 @@ import os
 import subprocess
 from concurrent import futures
 
-from src.chords import *
+from src import utils
 from src.midi import *
 
 dirname = os.path.dirname(__file__)
 
-# Calculate all chords by combine notes and chord patterns.
-all_chords = [(lambda x, y: x + y if y != 'M' else x)(x, y) for x in Note.notes if x not in Note.alt_table.keys()
-              for y in Pattern.table.keys()]
+all_chords = utils.all_chords
 
 
 def dir_check():
@@ -44,8 +42,8 @@ def basic_generate():
 
 def midi_generate():
     def generate(chord):
-        for i in MIDIContent.inst_table:
-            p = MIDIContent(chord, i)
+        for i in SingleChordContent.inst_table:
+            p = SingleChordContent(chord, i)
             filename = p.pattern.chord.notation + '_' + p.inst
             p.write(os.path.join(dirname, '../data/midi/{}.mid'.format(filename)))
 
@@ -56,8 +54,8 @@ def midi_generate():
 
 def wave_generate():
     def generate(chord):
-        for i in MIDIContent.inst_table:
-            p = MIDIContent(chord, i)
+        for i in SingleChordContent.inst_table:
+            p = SingleChordContent(chord, i)
             filename = p.pattern.chord.notation + '_' + p.inst
             midi_name = os.path.join(dirname, '../data/midi/{}.mid'.format(filename))
             wave_name = os.path.join(dirname, '../data/wave/{}.wav'.format(filename))

@@ -1,3 +1,5 @@
+from typing import Optional
+
 import librosa
 import numpy as np
 import scipy.ndimage
@@ -74,3 +76,15 @@ def chroma_stft(y: np.ndarray) -> np.ndarray:
 
 def chroma_cens(y: np.ndarray) -> np.ndarray:
     return librosa.feature.chroma_cens(y=y, cqt_mode='hybrid')
+
+
+# Compute the mean of each piece of chromagram according to beat frames segmentation
+def means(chroma: np.ndarray, beat_frames: Optional[np.ndarray] = None) -> np.ndarray:
+    if beat_frames is not None:
+        beat_frames = np.insert(beat_frames, 0, 0)
+        beat_frames = np.append(beat_frames, len(chroma[0]) - 1)
+        return np.array(
+            [[chroma[i][beat_frames[j]:beat_frames[j + 1]].mean() for j in range(len(beat_frames) - 1)] for i in
+             range(len(chroma))])
+    else:
+        return np.array([chroma[i].mean() for i in range(len(chroma))])

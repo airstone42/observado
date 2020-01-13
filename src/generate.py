@@ -1,14 +1,15 @@
 #!/usr/bin/env python3
-import json
 import os
 import subprocess
 from concurrent import futures
+
+import pandas
 
 from src import utils
 from src.midi import *
 
 dirname = os.path.dirname(__file__)
-
+all_notes = utils.all_notes
 all_chords = utils.all_chords
 
 
@@ -18,22 +19,24 @@ def dir_check():
             os.mkdir(os.path.join(dirname, subdir))
 
     print('Checking directories...')
-    for i in ['../data', '../data/midi', '../data/wave']:
+    for i in ['../data', '../data/midi', '../data/wave', '../data/feature']:
         check_and_make(i)
 
 
 def basic_generate():
-    data = {'basic': []}
+    data = []
     for i in all_chords:
         p = Pattern(i)
         if p.available:
-            item = {'notation': p.chord.notation, 'array': p.array.tolist(), 'root': str(p.chord.root),
-                    'quality': p.chord.quality, 'bass': str(p.chord.bass)}
-            data['basic'].append(item)
+            notes = [x for x in all_notes if x not in utils.note_alts.keys()]
+            chroma = dict(zip(notes, p.array.tolist()))
+            extra = {'notation': p.chord.notation, 'root': str(p.chord.root), 'quality': p.chord.quality,
+                     'bass': str(p.chord.bass)}
+            data.append({**chroma, **extra})
     try:
-        with open(os.path.join(dirname, '../data/basic.json'), 'xt') as f:
+        with open(os.path.join(dirname, '../data/feature/basic.csv'), 'xt', encoding="utf-8", newline='\n') as f:
             print('Generating basic patterns...')
-            json.dump(data, f)
+            pandas.DataFrame(data).to_csv(f, index=False, line_terminator='\n')
     except FileExistsError:
         pass
     except Exception as e:

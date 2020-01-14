@@ -23,6 +23,11 @@ def dir_check():
     for i in ['../data', '../data/midi', '../data/wave', '../data/feature']:
         check_and_make(i)
 
+    if len(os.listdir(os.path.join(dirname, '../data/midi'))) == 0:
+        open(os.path.join(dirname, '../data/midi/.gitkeep'), 'a').close()
+    if len(os.listdir(os.path.join(dirname, '../data/wave'))) == 0:
+        open(os.path.join(dirname, '../data/wave/.gitkeep'), 'a').close()
+
 
 def basic_generate():
     if os.path.exists(os.path.join(dirname, '../data/feature/basic.csv')):
@@ -55,7 +60,7 @@ def midi_generate():
             p.write(os.path.join(dirname, '../data/midi/{}.mid'.format(filename)))
 
     dir_list = os.listdir(os.path.join(dirname, '../data/midi'))
-    if len(dir_list) != 0 or not (len(dir_list) == 1 and dir_list[0] == '.gitkeep'):
+    if (len(dir_list) != 0 and len(dir_list) != 1) or not (len(dir_list) == 1 and dir_list[0] == '.gitkeep'):
         return
 
     print('Generating MIDI files...')
@@ -90,7 +95,7 @@ def wave_generate():
             return
 
     dir_list = os.listdir(os.path.join(dirname, '../data/wave'))
-    if len(dir_list) != 0 or not (len(dir_list) == 1 and dir_list[0] == '.gitkeep'):
+    if (len(dir_list) != 0 and len(dir_list) != 1) or not (len(dir_list) == 1 and dir_list[0] == '.gitkeep'):
         return
 
     print('Generating WAV files...')
@@ -108,9 +113,9 @@ def wave_generate():
 def wave_feature_generate():
     names = {utils.chroma_cqt: 'cqt', utils.chroma_stft: 'stft', utils.chroma_cens: 'cens',
              utils.chroma_cqtx: 'enhanced_cqt'}
-    paths = [os.path.join(dirname, x) for x in ['../data/feature/wav_{}.csv'.format(name) for name in [names.values()]]]
+    paths = [os.path.join(dirname, x) for x in ['../data/feature/wav_{}.csv'.format(name) for name in names.values()]]
     existence = [os.path.exists(x) for x in paths]
-    if not all(existence):
+    if all(existence):
         return
 
     class List(list):

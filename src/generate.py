@@ -25,6 +25,9 @@ def dir_check():
 
 
 def basic_generate():
+    if os.path.exists(os.path.join(dirname, '../data/feature/basic.csv')):
+        return
+
     data = []
     for i in all_chords:
         p = Pattern(i)
@@ -50,6 +53,10 @@ def midi_generate():
             p = SingleChordContent(chord, i)
             filename = p.pattern.chord.notation + '_' + p.inst
             p.write(os.path.join(dirname, '../data/midi/{}.mid'.format(filename)))
+
+    dir_list = os.listdir(os.path.join(dirname, '../data/midi'))
+    if len(dir_list) != 0 or not (len(dir_list) == 1 and dir_list[0] == '.gitkeep'):
+        return
 
     print('Generating MIDI files...')
     with futures.ThreadPoolExecutor(max_workers=12) as pool:
@@ -82,6 +89,10 @@ def wave_generate():
             print('Make sure timidity is installed.')
             return
 
+    dir_list = os.listdir(os.path.join(dirname, '../data/wave'))
+    if len(dir_list) != 0 or not (len(dir_list) == 1 and dir_list[0] == '.gitkeep'):
+        return
+
     print('Generating WAV files...')
     with futures.ThreadPoolExecutor(max_workers=12) as pool:
         pool.map(generate, all_chords)
@@ -99,6 +110,11 @@ def wave_feature_generate():
     names = {utils.chroma_cqt: 'cqt', utils.chroma_stft: 'stft', utils.chroma_cens: 'cens',
              utils.chroma_cqtx: 'enhanced_cqt'}
     lock = threading.Lock()
+
+    paths = [os.path.join(dirname, x) for x in ['../data/feature/wav_{}.csv'.format(name) for name in [names.values()]]]
+    existence = [os.path.exists(x) for x in paths]
+    if not all(existence):
+        return
 
     def generate(chord):
         for i in SingleChordContent.inst_table:

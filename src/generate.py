@@ -106,15 +106,24 @@ def wave_generate():
 
 
 def wave_feature_generate():
-    storage = {utils.chroma_cqt: [], utils.chroma_stft: [], utils.chroma_cens: [], utils.chroma_cqtx: []}
     names = {utils.chroma_cqt: 'cqt', utils.chroma_stft: 'stft', utils.chroma_cens: 'cens',
              utils.chroma_cqtx: 'enhanced_cqt'}
-    lock = threading.Lock()
-
     paths = [os.path.join(dirname, x) for x in ['../data/feature/wav_{}.csv'.format(name) for name in [names.values()]]]
     existence = [os.path.exists(x) for x in paths]
     if not all(existence):
         return
+
+    class List(list):
+        def __init__(self):
+            super().__init__()
+            self.lock = threading.Lock()
+
+        def append(self, o) -> None:
+            with self.lock:
+                super().append(o)
+
+    storage = {utils.chroma_cqt: List(), utils.chroma_stft: List(), utils.chroma_cens: List(),
+               utils.chroma_cqtx: List()}
 
     def generate(chord):
         for i in SingleChordContent.inst_table:
@@ -132,8 +141,7 @@ def wave_feature_generate():
                 chroma = utils.means(method(y))
                 chroma = dict(zip(notes, chroma.tolist()))
                 extra['method'] = names[method]
-                with lock:
-                    storage[method].append({**chroma, **extra})
+                storage[method].append({**chroma, **extra})
 
     print('Extracting features from WAV files...')
     with futures.ThreadPoolExecutor(max_workers=12) as pool:

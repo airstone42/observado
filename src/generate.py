@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import os
 import subprocess
+import threading
 from concurrent import futures
 
 import pandas
@@ -93,11 +94,52 @@ def wave_generate():
                           os.path.join(dirname, '../data/wave/', file.replace('m7b5', 'ø7')))
 
 
+def wave_feature_generate():
+    storage = {utils.chroma_cqt: [], utils.chroma_stft: [], utils.chroma_cens: [], utils.chroma_cqtx: []}
+    names = {utils.chroma_cqt: 'cqt', utils.chroma_stft: 'stft', utils.chroma_cens: 'cens',
+             utils.chroma_cqtx: 'enhanced_cqt'}
+    lock = threading.Lock()
+
+    def generate(chord):
+        for i in SingleChordContent.inst_table:
+            p = SingleChordContent(chord, i)
+            inst = p.inst
+            p = p.pattern
+            filename = p.chord.notation + '_' + inst
+            wave_name = os.path.join(dirname, '../data/wave/{}.wav'.format(filename))
+            notes = [x for x in all_notes if x not in utils.note_alts.keys()]
+            extra = {'notation': p.chord.notation, 'root': str(p.chord.root), 'quality': p.chord.quality,
+                     'bass': str(p.chord.bass), 'instrument': inst}
+
+            y = utils.load(wave_name)
+            for method in storage.keys():
+                chroma = utils.means(method(y))
+                chroma = dict(zip(notes, chroma.tolist()))
+                extra['method'] = names[method]
+                with lock:
+                    storage[method].append({**chroma, **extra})
+
+    print('Extracting features from WAV files...')
+    with futures.ThreadPoolExecutor(max_workers=12) as pool:
+        pool.map(generate, all_chords)
+
+    for function, name in names.items():
+        try:
+            with open(os.path.join(dirname, '../data/feature/wav_{}.csv'.format(name)), 'xt', encoding="utf-8",
+                      newline='\n') as f:
+                pandas.DataFrame(storage[function]).to_csv(f, index=False, line_terminator='\n')
+        except FileExistsError:
+            pass
+        except Exception as e:
+            raise e
+
+
 def main():
     dir_check()
     basic_generate()
     midi_generate()
     wave_generate()
+    wave_feature_generate()
     print('Done.')
 
 

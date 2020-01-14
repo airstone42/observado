@@ -5,6 +5,8 @@ __pycache__
 
 /data/midi/*
 /data/wave/*
+/data/feature/*
 
 !/data/midi/.gitkeep
 !/data/wave/.gitkeep
+!/data/feature/basic.csv

@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 import os
+import random
 import subprocess
 from concurrent import futures
 
+import numpy as np
 import pandas
 
 from src import utils
@@ -11,6 +13,7 @@ from src.midi import *
 dirname = os.path.dirname(__file__)
 all_notes = utils.all_notes
 all_chords = utils.all_chords
+noise = (0.3, 0.8)
 
 
 def dir_check():
@@ -152,12 +155,45 @@ def wave_feature_generate():
             raise e
 
 
+def noise_feature_generate():
+    if os.path.exists(os.path.join(dirname, '../data/feature/noise.csv')):
+        return
+
+    random.seed(10)
+    templates = [np.zeros(12) for _ in range(12)]
+    for i in range(12):
+        templates[i][i] = 1
+    full = np.full(12, 1)
+    while len(templates) < 12 * 2:
+        r = random.random()
+        if r < noise[0] or r > noise[1]:
+            templates.append(full * r)
+
+    data = []
+    while len(data) < len(all_chords):
+        r = random.random()
+        if r < noise[0] or r > noise[1]:
+            notes = [x for x in all_notes if x not in utils.note_alts.keys()]
+            chroma = dict(zip(notes, templates[random.randrange(len(templates) - 1)] * r))
+            extra = {'notation': 'N', 'root': 'N', 'quality': 'N', 'bass': 'N'}
+            data.append({**chroma, **extra})
+    try:
+        with open(os.path.join(dirname, '../data/feature/noise.csv'), 'xt', encoding="utf-8", newline='\n') as f:
+            print('Generating non-chord features...')
+            pandas.DataFrame(data).to_csv(f, index=False, line_terminator='\n')
+    except FileExistsError:
+        pass
+    except Exception as e:
+        raise e
+
+
 def main():
     dir_check()
     basic_generate()
     midi_generate()
     wave_generate()
     wave_feature_generate()
+    noise_feature_generate()
     print('Done.')
 
 

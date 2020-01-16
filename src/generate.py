@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 import os
 import subprocess
-import threading
 from concurrent import futures
 
 import pandas
@@ -118,17 +117,7 @@ def wave_feature_generate():
     if all(existence):
         return
 
-    class List(list):
-        def __init__(self):
-            super().__init__()
-            self.lock = threading.Lock()
-
-        def append(self, o) -> None:
-            with self.lock:
-                super().append(o)
-
-    storage = {utils.chroma_cqt: List(), utils.chroma_stft: List(), utils.chroma_cens: List(),
-               utils.chroma_cqtx: List()}
+    storage = {utils.chroma_cqt: [], utils.chroma_stft: [], utils.chroma_cens: [], utils.chroma_cqtx: []}
 
     def generate(chord):
         for i in SingleChordContent.inst_table:

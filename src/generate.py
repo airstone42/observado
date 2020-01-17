@@ -133,7 +133,9 @@ def wave_feature_generate():
             extra = {'notation': p.chord.notation, 'root': str(p.chord.root), 'quality': p.chord.quality,
                      'bass': str(p.chord.bass), 'instrument': inst}
 
+            # Too long for generated wave files, need to be cut.
             y = utils.load(wave_name)
+            y = y[:len(y) / 2]
             for method in storage.keys():
                 chroma = utils.means(method(y))
                 chroma = dict(zip(notes, chroma.tolist()))

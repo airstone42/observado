@@ -29,17 +29,17 @@ def dir_check():
             os.mkdir(os.path.join(dirname, subdir))
 
     print('Checking directories...')
-    for i in ['../data', '../data/midi', '../data/wave', '../data/feature']:
+    for i in ['../data', '../data/midi', '../data/waves', '../data/features']:
         check_and_make(i)
 
     if len(os.listdir(os.path.join(dirname, '../data/midi'))) == 0:
         open(os.path.join(dirname, '../data/midi/.gitkeep'), 'a').close()
-    if len(os.listdir(os.path.join(dirname, '../data/wave'))) == 0:
-        open(os.path.join(dirname, '../data/wave/.gitkeep'), 'a').close()
+    if len(os.listdir(os.path.join(dirname, '../data/waves'))) == 0:
+        open(os.path.join(dirname, '../data/waves/.gitkeep'), 'a').close()
 
 
 def basic_generate():
-    if os.path.exists(os.path.join(dirname, '../data/feature/basic.csv')):
+    if os.path.exists(os.path.join(dirname, '../data/features/basic.csv')):
         return
 
     data = []
@@ -52,7 +52,7 @@ def basic_generate():
                      'bass': str(p.chord.bass)}
             data.append({**chroma, **extra})
     try:
-        with open(os.path.join(dirname, '../data/feature/basic.csv'), 'xt', encoding="utf-8", newline='\n') as f:
+        with open(os.path.join(dirname, '../data/features/basic.csv'), 'xt', encoding="utf-8", newline='\n') as f:
             print('Generating basic patterns...')
             pandas.DataFrame(data).to_csv(f, index=False, line_terminator='\n')
     except FileExistsError:
@@ -85,7 +85,7 @@ def wave_generate():
                 p = SingleChordContent(chord, i, j)
                 filename = p.pattern.chord.notation + '_' + str(p.inst) + '_' + str(p.method)
                 midi_name = os.path.join(dirname, '../data/midi/{}.mid'.format(filename))
-                wave_name = os.path.join(dirname, '../data/wave/{}.wav'.format(filename))
+                wave_name = os.path.join(dirname, '../data/waves/{}.wav'.format(filename))
                 if not os.path.exists(wave_name):
                     # Problems when running on Windows for 'ø7' chord.
                     if 'ø7' in wave_name:
@@ -105,7 +105,7 @@ def wave_generate():
             print('Make sure timidity is installed.')
             return
 
-    dir_list = os.listdir(os.path.join(dirname, '../data/wave'))
+    dir_list = os.listdir(os.path.join(dirname, '../data/waves'))
     if (len(dir_list) != 0 and len(dir_list) != 1) or not (len(dir_list) == 1 and dir_list[0] == '.gitkeep'):
         return
 
@@ -113,17 +113,17 @@ def wave_generate():
     multi_run(generate, all_chords)
 
     # Fix 'ø7' filename after generation.
-    for _, _, files in os.walk(os.path.join(dirname, '../data/wave/')):
+    for _, _, files in os.walk(os.path.join(dirname, '../data/waves/')):
         for file in files:
             if 'm7b5' in file:
-                os.rename(os.path.join(dirname, '../data/wave/', file),
-                          os.path.join(dirname, '../data/wave/', file.replace('m7b5', 'ø7')))
+                os.rename(os.path.join(dirname, '../data/waves/', file),
+                          os.path.join(dirname, '../data/waves/', file.replace('m7b5', 'ø7')))
 
 
 def wave_feature_generate():
     names = {utils.chroma_cqt: 'cqt', utils.chroma_stft: 'stft', utils.chroma_cens: 'cens',
              utils.chroma_cqtx: 'enhanced_cqt'}
-    paths = [os.path.join(dirname, x) for x in ['../data/feature/wav_{}.csv'.format(name) for name in names.values()]]
+    paths = [os.path.join(dirname, x) for x in ['../data/features/wav_{}.csv'.format(name) for name in names.values()]]
     existence = [os.path.exists(x) for x in paths]
     if all(existence):
         return
@@ -138,11 +138,11 @@ def wave_feature_generate():
                 play = str(p.method)
                 p = p.pattern
                 filename = p.chord.notation + '_' + inst + '_' + play
-                wave_name = os.path.join(dirname, '../data/wave/{}.wav'.format(filename))
+                wave_name = os.path.join(dirname, '../data/waves/{}.wav'.format(filename))
                 notes = [x for x in all_notes if x not in utils.note_alts.keys()]
                 extra = {'notation': p.chord.notation, 'root': str(p.chord.root), 'quality': p.chord.quality, 'bass': str(p.chord.bass)}
 
-                # Too long for generated wave files, need to be cut.
+                # Too long for generated waves files, need to be cut.
                 y = utils.load(wave_name)
                 y = y[:int(len(y) / 2)]
                 for method in storage.keys():
@@ -156,7 +156,7 @@ def wave_feature_generate():
 
     for function, name in names.items():
         try:
-            with open(os.path.join(dirname, '../data/feature/wav_{}.csv'.format(name)), 'xt', encoding="utf-8",
+            with open(os.path.join(dirname, '../data/features/wav_{}.csv'.format(name)), 'xt', encoding="utf-8",
                       newline='\n') as f:
                 pandas.DataFrame(storage[function]).to_csv(f, index=False, line_terminator='\n')
         except FileExistsError:
@@ -166,7 +166,7 @@ def wave_feature_generate():
 
 
 def noise_feature_generate():
-    if os.path.exists(os.path.join(dirname, '../data/feature/noise.csv')):
+    if os.path.exists(os.path.join(dirname, '../data/features/noise.csv')):
         return
 
     random.seed(10)
@@ -189,7 +189,7 @@ def noise_feature_generate():
             data.append({**chroma, **extra})
 
     try:
-        with open(os.path.join(dirname, '../data/feature/noise.csv'), 'xt', encoding="utf-8", newline='\n') as f:
+        with open(os.path.join(dirname, '../data/features/noise.csv'), 'xt', encoding="utf-8", newline='\n') as f:
             print('Generating non-chord features...')
             pandas.DataFrame(data).to_csv(f, index=False, line_terminator='\n')
     except FileExistsError:

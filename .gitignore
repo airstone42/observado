@@ -4,9 +4,9 @@ __pycache__
 .vscode
 
 /data/midi/*
-/data/wave/*
-/data/feature/*
+/data/waves/*
+/data/features/*
 
 !/data/midi/.gitkeep
-!/data/wave/.gitkeep
-!/data/feature/basic.csv
+!/data/waves/.gitkeep
+!/data/features/basic.csv

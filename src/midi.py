@@ -49,8 +49,35 @@ class SingleChordContent(object):
         event += ''.join(x for x in ['80' + '{:02x}'.format(x) + '4000' for x in self.pattern.component])
         return event
 
+    def _play_2(self) -> str:
+        # Press keys
+        event = ''.join(x for x in ['90' + '{:02x}'.format(x) + '4000' for x in self.pattern.component])
+        event = event[:event.rfind('00')] + '8200'
+        # Release keys
+        event += ''.join(x for x in ['80' + '{:02x}'.format(x) + '4000' for x in self.pattern.component])
+
+        for i in range(2):
+            event += ''.join(x for x in ['90' + '{:02x}'.format(x) + '4000' for x in self.pattern.component])
+            event = event[:event.rfind('00')] + '8100'
+            event += ''.join(x for x in ['80' + '{:02x}'.format(x) + '4000' for x in self.pattern.component])
+        return event
+
+    def _play_3(self) -> str:
+        # Press keys
+        p = ''.join(x for x in ['90' + '{:02x}'.format(x) + '4000' for x in self.pattern.component[1:]])
+        event = p + '90' + '{:02x}'.format(self.pattern.component[0]) + '408100'
+        # Release keys
+        r = ''.join(x for x in ['80' + '{:02x}'.format(x) + '4000' for x in self.pattern.component[1:]])
+        r = r[:r.rfind('00')] + '8100'
+        event += r
+        event += p
+        event = event[:event.rfind('00')] + '8100'
+        event += r
+        event += '80' + '{:02x}'.format(self.pattern.component[0]) + '4000'
+        return event
+
     # chord playing patterns
-    play_table = {0: _play_0, 1: _play_1}
+    play_table = {0: _play_0, 1: _play_1, 2: _play_2, 3: _play_3}
 
     def __init__(self, pattern, instrument=0, method=0):
         try:

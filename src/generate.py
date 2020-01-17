@@ -6,6 +6,7 @@ from concurrent import futures
 
 import numpy as np
 import pandas
+from tqdm import tqdm
 
 from src import utils
 from src.midi import *
@@ -14,6 +15,12 @@ dirname = os.path.dirname(__file__)
 all_notes = utils.all_notes
 all_chords = utils.all_chords
 noise = (0.3, 0.8)
+
+
+def multi_run(function, iterator):
+    with futures.ThreadPoolExecutor(max_workers=12) as pool:
+        result = list(tqdm(pool.map(function, iterator), total=len(iterator)))
+    return result
 
 
 def dir_check():
@@ -55,33 +62,35 @@ def basic_generate():
 
 
 def midi_generate():
+
     def generate(chord):
         for i in SingleChordContent.inst_table:
-            p = SingleChordContent(chord, i)
-            filename = p.pattern.chord.notation + '_' + p.inst
-            p.write(os.path.join(dirname, '../data/midi/{}.mid'.format(filename)))
+            for j in SingleChordContent.play_table.keys():
+                p = SingleChordContent(chord, i, j)
+                filename = p.pattern.chord.notation + '_' + str(p.inst) + '_' + str(p.method)
+                p.write(os.path.join(dirname, '../data/midi/{}.mid'.format(filename)))
 
     dir_list = os.listdir(os.path.join(dirname, '../data/midi'))
     if (len(dir_list) != 0 and len(dir_list) != 1) or not (len(dir_list) == 1 and dir_list[0] == '.gitkeep'):
         return
 
     print('Generating MIDI files...')
-    with futures.ThreadPoolExecutor(max_workers=12) as pool:
-        pool.map(generate, all_chords)
+    multi_run(generate, all_chords)
 
 
 def wave_generate():
     def generate(chord):
         for i in SingleChordContent.inst_table:
-            p = SingleChordContent(chord, i)
-            filename = p.pattern.chord.notation + '_' + p.inst
-            midi_name = os.path.join(dirname, '../data/midi/{}.mid'.format(filename))
-            wave_name = os.path.join(dirname, '../data/wave/{}.wav'.format(filename))
-            if not os.path.exists(wave_name):
-                # Problems when running on Windows for 'ø7' chord.
-                if 'ø7' in wave_name:
-                    wave_name = wave_name.replace('ø7', 'm7b5')
-                subprocess.run([child, midi_name, '-Ow', '-o', wave_name], stdout=subprocess.DEVNULL)
+            for j in SingleChordContent.play_table.keys():
+                p = SingleChordContent(chord, i, j)
+                filename = p.pattern.chord.notation + '_' + str(p.inst) + '_' + str(p.method)
+                midi_name = os.path.join(dirname, '../data/midi/{}.mid'.format(filename))
+                wave_name = os.path.join(dirname, '../data/wave/{}.wav'.format(filename))
+                if not os.path.exists(wave_name):
+                    # Problems when running on Windows for 'ø7' chord.
+                    if 'ø7' in wave_name:
+                        wave_name = wave_name.replace('ø7', 'm7b5')
+                    subprocess.run([child, midi_name, '-Ow', '-o', wave_name], stdout=subprocess.DEVNULL)
 
     # Check timidity.
     child = 'timidity'
@@ -101,8 +110,7 @@ def wave_generate():
         return
 
     print('Generating WAV files...')
-    with futures.ThreadPoolExecutor(max_workers=12) as pool:
-        pool.map(generate, all_chords)
+    multi_run(generate, all_chords)
 
     # Fix 'ø7' filename after generation.
     for _, _, files in os.walk(os.path.join(dirname, '../data/wave/')):
@@ -124,27 +132,27 @@ def wave_feature_generate():
 
     def generate(chord):
         for i in SingleChordContent.inst_table:
-            p = SingleChordContent(chord, i)
-            inst = p.inst
-            p = p.pattern
-            filename = p.chord.notation + '_' + inst
-            wave_name = os.path.join(dirname, '../data/wave/{}.wav'.format(filename))
-            notes = [x for x in all_notes if x not in utils.note_alts.keys()]
-            extra = {'notation': p.chord.notation, 'root': str(p.chord.root), 'quality': p.chord.quality,
-                     'bass': str(p.chord.bass), 'instrument': inst}
+            for j in SingleChordContent.play_table.keys():
+                p = SingleChordContent(chord, i, j)
+                inst = str(p.inst)
+                play = str(p.method)
+                p = p.pattern
+                filename = p.chord.notation + '_' + inst + '_' + play
+                wave_name = os.path.join(dirname, '../data/wave/{}.wav'.format(filename))
+                notes = [x for x in all_notes if x not in utils.note_alts.keys()]
+                extra = {'notation': p.chord.notation, 'root': str(p.chord.root), 'quality': p.chord.quality, 'bass': str(p.chord.bass)}
 
-            # Too long for generated wave files, need to be cut.
-            y = utils.load(wave_name)
-            y = y[:len(y) / 2]
-            for method in storage.keys():
-                chroma = utils.means(method(y))
-                chroma = dict(zip(notes, chroma.tolist()))
-                extra['method'] = names[method]
-                storage[method].append({**chroma, **extra})
+                # Too long for generated wave files, need to be cut.
+                y = utils.load(wave_name)
+                y = y[:int(len(y) / 2)]
+                for method in storage.keys():
+                    chroma = utils.means(method(y))
+                    chroma = dict(zip(notes, chroma.tolist()))
+                    extra['method'] = names[method]
+                    storage[method].append({**chroma, **extra})
 
     print('Extracting features from WAV files...')
-    with futures.ThreadPoolExecutor(max_workers=12) as pool:
-        pool.map(generate, all_chords)
+    multi_run(generate, all_chords)
 
     for function, name in names.items():
         try:
@@ -179,6 +187,7 @@ def noise_feature_generate():
             chroma = dict(zip(notes, templates[random.randrange(len(templates) - 1)] * r))
             extra = {'notation': 'N', 'root': 'N', 'quality': 'N', 'bass': 'N'}
             data.append({**chroma, **extra})
+
     try:
         with open(os.path.join(dirname, '../data/feature/noise.csv'), 'xt', encoding="utf-8", newline='\n') as f:
             print('Generating non-chord features...')

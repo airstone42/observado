@@ -14,7 +14,7 @@ class MIDIPattern(Pattern):
         bass = [self.bass[self.chord.bass.value()]]
         # Pick notes by matching array.
         alto = [self.alto[x] for x in range(len(self.array)) if self.array[x]]
-        return sorted(bass + alto, reverse=True)
+        return sorted(bass + alto)
 
     def __repr__(self):
         return 'MIDIPattern({!r})'.format(self.__dict__)
@@ -31,10 +31,28 @@ class SingleChordContent(object):
     # MIDI track type
     _MTrk_type: str = '4d 54 72 6b'
 
-    # MIDI instruments map including grand piano, steel guitar, ensemble strings, syn choir, square wave and saw wave.
-    inst_table = {'pf': 0, 'gtr': 25, 'str': 48, 'ch': 54, 'sqr': 80, 'saw': 81}
+    # MIDI instruments
+    inst_table = [0, 1, 2, 10, 12, 13, 24, 25, 26, 27, 40, 41, 48, 49, 54, 56, 57, 80, 81, 88, 89, 90]
 
-    def __init__(self, pattern, instrument='pf'):
+    def _play_0(self) -> str:
+        # Press keys
+        event = ''.join(x for x in ['90' + '{:02x}'.format(x) + '4000' for x in self.pattern.component])
+        event = event[:event.rfind('00')] + '8400'
+        # Release keys
+        event += ''.join(x for x in ['80' + '{:02x}'.format(x) + '4000' for x in self.pattern.component])
+        return event
+
+    def _play_1(self) -> str:
+        # Press keys
+        event = ''.join(x for x in ['90' + '{:02x}'.format(x) + '408200' for x in self.pattern.component])
+        # Release keys
+        event += ''.join(x for x in ['80' + '{:02x}'.format(x) + '4000' for x in self.pattern.component])
+        return event
+
+    # chord playing patterns
+    play_table = {0: _play_0, 1: _play_1}
+
+    def __init__(self, pattern, instrument=0, method=0):
         try:
             if isinstance(pattern, str):
                 pattern = MIDIPattern(pattern)
@@ -45,8 +63,10 @@ class SingleChordContent(object):
             elif not isinstance(pattern, MIDIPattern):
                 raise ValueError
             self.pattern: MIDIPattern = pattern
-            if instrument in self.inst_table.keys():
+            if instrument in self.inst_table:
                 self.inst = instrument
+            if method in self.play_table.keys():
+                self.method = method
             else:
                 raise ValueError
         except ValueError as e:
@@ -56,7 +76,7 @@ class SingleChordContent(object):
         return 'MIDIContent({!r})'.format(self.__dict__)
 
     def __str__(self):
-        return 'MIDIPattern({}, {})'.format(str(self.pattern), self.inst)
+        return 'MIDIPattern({}, {}, {})'.format(str(self.pattern), self.inst, self.method)
 
     def _content(self) -> bytes:
         return bytes.fromhex(self._head() + self._track())
@@ -65,16 +85,12 @@ class SingleChordContent(object):
         return self._MThd
 
     def _track(self) -> str:
-        instrument = 'c0' + '{:02x}'.format(self.inst_table[self.inst]) + '00'
+        instrument = 'c0' + '{:02x}'.format(self.inst) + '00'
 
         # 120 bpm
         tempo = 'ff 51 03 07 A1 20 00'
 
-        # Press keys
-        event = ''.join(x for x in ['90' + '{:02x}'.format(x) + '4000' for x in self.pattern.component])
-        event = event[:event.rfind('00')] + '8400'
-        # Release keys
-        event += ''.join(x for x in ['80' + '{:02x}'.format(x) + '4000' for x in self.pattern.component])
+        event = self.play_table[self.method](self)
 
         end = 'ff 2f 00'
 

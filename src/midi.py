@@ -32,7 +32,7 @@ class SingleChordContent(object):
     _MTrk_type: str = '4d 54 72 6b'
 
     # MIDI instruments
-    inst_table = [0, 1, 2, 10, 12, 13, 24, 25, 26, 27, 40, 41, 48, 49, 54, 56, 57, 80, 81, 88, 89, 90]
+    inst_table = [0, 1, 2, 10, 12, 24, 25, 26, 27, 40, 41, 42, 48, 49, 54, 55, 56, 57, 80, 81, 88, 89, 90]
 
     def _play_0(self) -> str:
         # Press keys

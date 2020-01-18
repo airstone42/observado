@@ -4,6 +4,7 @@ import random
 import subprocess
 from concurrent import futures
 
+import librosa
 import numpy as np
 import pandas
 from tqdm import tqdm
@@ -142,9 +143,10 @@ def wave_feature_generate():
                 notes = [x for x in all_notes if x not in utils.note_alts.keys()]
                 extra = {'notation': p.chord.notation, 'root': str(p.chord.root), 'quality': p.chord.quality, 'bass': str(p.chord.bass)}
 
-                # Too long for generated waves files, need to be cut.
-                y = utils.load(wave_name)
-                y = y[:int(len(y) / 2)]
+                duration = librosa.get_duration(filename=wave_name)
+                # Cut silent part for generated waves files.
+                # Less computation than librosa.effects.trim().
+                y, _ = librosa.load(wave_name, duration=duration - 2)
                 for method in storage.keys():
                     chroma = utils.means(method(y))
                     chroma = dict(zip(notes, chroma.tolist()))
@@ -180,7 +182,7 @@ def noise_feature_generate():
             templates.append(full * r)
 
     data = []
-    while len(data) < len(all_chords):
+    while len(data) < len(SingleChordContent.inst_table) + len(SingleChordContent.play_table):
         r = random.random()
         if r < noise[0] or r > noise[1]:
             notes = [x for x in all_notes if x not in utils.note_alts.keys()]

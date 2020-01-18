@@ -38,10 +38,6 @@ all_chords = [(lambda x, y: x + y if y != 'M' else x)(x, y) for x in all_notes i
               chord_table.keys()]
 
 
-def load(filename: str) -> np.ndarray:
-    return librosa.load(filename)[0]
-
-
 # Compute a float number indicating BPM.
 def tempo(y: np.ndarray, p=False) -> float:
     env = librosa.onset.onset_strength(y)

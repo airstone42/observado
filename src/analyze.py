@@ -6,16 +6,22 @@ import os
 import numpy as np
 import pandas as pd
 import tensorflow as tf
+from keras.layers import Dense, Input, concatenate
+from keras.models import Model
 from tensorflow import keras
 
 import src.utils as utils
 
 tf.keras.backend.clear_session()
 
-dirname = os.path.dirname(__file__)
+roots = dict(zip([x for x in utils.all_notes if x not in utils.note_alts.keys()], [y for y in range(12)]))
+roots['N'] = 12
+qualities = dict(zip([x for x in utils.chord_table.keys()], [y for y in range(len(utils.chord_table))]))
+qualities['N'] = len(utils.chord_table)
 chords = dict(zip([x for x in utils.all_chords], [y for y in range(len(utils.all_chords))]))
-chords['N'] = 168
+chords['N'] = len(chords)
 
+dirname = os.path.dirname(__file__)
 basic = os.path.join(dirname, '../data/features/basic.csv')
 noise = os.path.join(dirname, '../data/features/noise.csv')
 enhanced_cqt = os.path.join(dirname, '../data/features/wav_enhanced_cqt.csv')
@@ -24,62 +30,55 @@ stft = os.path.join(dirname, '../data/features/wav_stft.csv')
 cens = os.path.join(dirname, '../data/features/wav_cens.csv')
 
 
-def load_data(wav_path, noise_path=noise) -> (np.ndarray, np.ndarray):
+def _load_data(wav_path, noise_path=noise) -> (np.ndarray, np.ndarray, np.ndarray):
     df = pd.read_csv(wav_path, usecols=lambda col: col != 'method')
     df = df.append(pd.read_csv(noise_path), sort=False)
     head = list(df.head())
-    need = chords
-    # a = np.array([(x[head.index('C'):head.index('B') + 1], need[x[head.index('quality')]]) for x in df.values if
-    #               x[head.index('quality')] in need.keys()])
-    a = np.array([(x[head.index('C'):head.index('B') + 1], need[x[head.index('notation')]]) for x in df.values if
-                  x[head.index('notation')] in need.keys()])
+    a = np.array(
+        [(x[head.index('C'):head.index('B') + 1], roots[x[head.index('root')]], qualities[x[head.index('quality')]]) for
+         x in df.values if x[head.index('notation')] in chords.keys()])
     np.random.shuffle(a)
     x = np.array([x[0] for x in a], dtype=np.float)
     y = np.array([x[1] for x in a])
-    return x, y
+    z = np.array([x[2] for x in a])
+    return x, y, z
 
 
-def train():
-    x, y = load_data(enhanced_cqt)
-    x_train, y_train = x[:int(0.7 * len(x))], y[:int(0.7 * len(y))]
-    x_valid, y_valid = x[int(0.7 * len(x)):int(0.9 * len(x))], y[int(0.7 * len(y)):int(0.9 * len(y))]
-    x_test, y_test = x[int(0.9 * len(x)):], y[int(0.9 * len(y)):]
+def _train():
+    x_full, y_full, z_full = _load_data(enhanced_cqt)
+    x_train, y_train, z_train = \
+        x_full[:int(0.7 * len(x_full))], y_full[:int(0.7 * len(y_full))], z_full[:int(0.7 * len(z_full))]
+    x_valid, y_valid, z_valid = \
+        x_full[int(0.7 * len(x_full)):int(0.9 * len(x_full))], y_full[int(0.7 * len(y_full)):int(0.9 * len(y_full))], \
+        z_full[int(0.7 * len(z_full)):int(0.9 * len(z_full))]
+    x_test, y_test, z_test = \
+        x_full[int(0.9 * len(x_full)):], y_full[int(0.9 * len(y_full)):], z_full[int(0.9 * len(z_full)):]
 
     if os.path.exists(os.path.join(dirname, '../data/models/model.h5')):
         model = keras.models.load_model(os.path.join(dirname, '../data/models/model.h5'))
-        print(model.evaluate(x_test, y_test))
+        print(model.evaluate(x_test, [y_test, z_test]))
         return
 
-    model = keras.models.Sequential([
-        keras.layers.Flatten(input_shape=[12]),
-        keras.layers.Dense(6000, activation="relu"),
-        keras.layers.Dense(3000, activation="relu"),
-        keras.layers.Dense(3000, activation="relu"),
-        keras.layers.Dense(400, activation="softmax")
-    ])
+    chord_input = Input(shape=(12,), dtype=float, name='chord_input')
+    x = Dense(600, activation='relu')(chord_input)
+    x = Dense(300, activation='relu')(x)
+    root_output = Dense(len(roots), activation='softmax')(x)
+    y = concatenate([chord_input, root_output])
+    y = Dense(6000, activation='relu')(y)
+    y = Dense(3000, activation='relu')(y)
+    y = Dense(1000, activation='relu')(y)
+    quality_output = Dense(len(qualities), activation='softmax')(y)
+
+    model = Model(inputs=chord_input, outputs=[root_output, quality_output])
     model.compile(loss="sparse_categorical_crossentropy", optimizer="sgd", metrics=["accuracy"])
-    model.fit(x_train, y_train, epochs=300, validation_data=(x_valid, y_valid))
-    print(model.evaluate(x_test, y_test))
+    model.fit(x_train, [y_train, z_train], epochs=100, validation_data=(x_valid, [y_valid, z_valid]))
+
+    print(model.evaluate(x_test, [y_test, z_test]))
     model.save(os.path.join(dirname, '../data/models/model.h5'))
 
 
-def analyze():
-    model = keras.models.load_model(os.path.join(dirname, '../data/models/model.h5'))
-    pred = pd.read_csv(basic)
-    head = list(pred.head())
-    a = np.array([(x[head.index('C'):head.index('B') + 1], x[head.index('notation')]) for x in pred.values if
-                  x[head.index('notation')] in chords.keys()])
-    np.random.shuffle(a)
-    y = np.array([x[1] for x in a])
-    x_pred = np.array([x[0] for x in a], dtype=np.float)
-    y_pred = [list(chords.keys())[list(chords.values()).index(x)] for x in model.predict_classes(x_pred)]
-    a = [(x, y) for x, y in list(zip(y, y_pred)) if x != y]
-    print(a)
-
-
 def main():
-    train()
-    analyze()
+    _train()
 
 
 if __name__ == '__main__':

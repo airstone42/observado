@@ -11,6 +11,7 @@ from keras.models import Model
 from tensorflow import keras
 
 import src.utils as utils
+from src.chords import Chord
 
 tf.keras.backend.clear_session()
 
@@ -75,6 +76,21 @@ def _train():
 
     print(model.evaluate(x_test, [y_test, z_test]))
     model.save(os.path.join(dirname, '../data/models/model.h5'))
+
+
+def analyze(y: np.ndarray) -> list:
+    def get_root(n: np.ndarray) -> str:
+        return list(roots.keys())[n.argmax()]
+
+    def get_quality(n: np.ndarray) -> str:
+        return '' if list(qualities.keys())[n.argmax()] == 'M' else list(qualities.keys())[n.argmax()]
+
+    model = keras.models.load_model(os.path.join(dirname, '../data/models/model.h5'))
+    y_prob = model.predict(y)
+    root_prob, quality_prob = y_prob[0], y_prob[1]
+    assert len(root_prob) == len(quality_prob)
+    pred = [Chord(get_root(root_prob[i]) + get_quality(quality_prob[i])) for i in range(len(root_prob))]
+    return pred
 
 
 def main():

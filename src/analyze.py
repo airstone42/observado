@@ -46,7 +46,7 @@ def _load_data(wav_path, noise_path=noise) -> (np.ndarray, np.ndarray, np.ndarra
 
 
 def _train():
-    x_full, y_full, z_full = _load_data(enhanced_cqt)
+    x_full, y_full, z_full = _load_data(cens)
     x_train, y_train, z_train = \
         x_full[:int(0.7 * len(x_full))], y_full[:int(0.7 * len(y_full))], z_full[:int(0.7 * len(z_full))]
     x_valid, y_valid, z_valid = \

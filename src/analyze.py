@@ -15,11 +15,16 @@ from src.chords import Chord
 
 tf.keras.backend.clear_session()
 
+excepted = ()
+chord_table = {k: v for (k, v) in utils.chord_table.items() if k not in excepted}
+all_chords = [(lambda x, y: x + y if y != 'M' else x)(x, y) for x in utils.all_notes if x not in utils.note_alts.keys()
+              for y in chord_table.keys()]
+
 roots = dict(zip([x for x in utils.all_notes if x not in utils.note_alts.keys()], [y for y in range(12)]))
 roots['N'] = 12
-qualities = dict(zip([x for x in utils.chord_table.keys()], [y for y in range(len(utils.chord_table))]))
-qualities['N'] = len(utils.chord_table)
-chords = dict(zip([x for x in utils.all_chords], [y for y in range(len(utils.all_chords))]))
+qualities = dict(zip([x for x in chord_table.keys()], [y for y in range(len(chord_table))]))
+qualities['N'] = len(chord_table)
+chords = dict(zip([x for x in all_chords], [y for y in range(len(all_chords))]))
 chords['N'] = len(chords)
 
 dirname = os.path.dirname(__file__)
@@ -89,7 +94,8 @@ def analyze(y: np.ndarray) -> list:
     y_prob = model.predict(y)
     root_prob, quality_prob = y_prob[0], y_prob[1]
     assert len(root_prob) == len(quality_prob)
-    pred = [Chord(get_root(root_prob[i]) + get_quality(quality_prob[i])) for i in range(len(root_prob))]
+    pred = [(lambda a, b: 'N' if a == 'N' or b == 'N' else Chord(a + b))
+            (get_root(root_prob[i]), get_quality(quality_prob[i])) for i in range(len(root_prob))]
     return pred
 
 

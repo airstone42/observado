@@ -15,7 +15,7 @@ from src.midi import *
 dirname = os.path.dirname(__file__)
 all_notes = utils.all_notes
 all_chords = utils.all_chords
-noise = (0.3, 0.8)
+noise = 0.3
 
 
 def multi_run(function, iterator):
@@ -172,19 +172,17 @@ def noise_feature_generate():
         return
 
     random.seed(10)
-    templates = [np.zeros(12) for _ in range(12)]
-    for i in range(12):
-        templates[i][i] = 1
+    templates = []
     full = np.full(12, 1)
-    while len(templates) < 12 * 2:
+    while len(templates) < 12:
         r = random.random()
-        if r < noise[0] or r > noise[1]:
+        if r < noise:
             templates.append(full * r)
 
     data = []
     while len(data) < len(SingleChordContent.inst_table) + len(SingleChordContent.play_table):
         r = random.random()
-        if r < noise[0] or r > noise[1]:
+        if r < noise:
             notes = [x for x in all_notes if x not in utils.note_alts.keys()]
             chroma = dict(zip(notes, templates[random.randrange(len(templates) - 1)] * r))
             extra = {'notation': 'N', 'root': 'N', 'quality': 'N', 'bass': 'N'}

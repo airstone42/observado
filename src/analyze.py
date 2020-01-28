@@ -3,19 +3,17 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 
 import os
 
+import joblib
 import numpy as np
 import pandas as pd
-import tensorflow as tf
-from keras.layers import Dense, Input, concatenate
-from keras.models import Model
-from tensorflow import keras
+from sklearn.metrics import accuracy_score
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.neural_network import MLPClassifier
 
 import src.utils as utils
 from src.chords import Chord
 
-tf.keras.backend.clear_session()
-
-excepted = ()
+excepted = ('sus2', 'sus4', 'aug', 'dim', 'dim7', 'ø7')
 chord_table = {k: v for (k, v) in utils.chord_table.items() if k not in excepted}
 all_chords = [(lambda x, y: x + y if y != 'M' else x)(x, y) for x in utils.all_notes if x not in utils.note_alts.keys()
               for y in chord_table.keys()]
@@ -53,46 +51,57 @@ def _load_data(wav_path, noise_path=noise) -> (np.ndarray, np.ndarray, np.ndarra
 def _train():
     x_full, y_full, z_full = _load_data(cens)
     x_train, y_train, z_train = \
-        x_full[:int(0.7 * len(x_full))], y_full[:int(0.7 * len(y_full))], z_full[:int(0.7 * len(z_full))]
-    x_valid, y_valid, z_valid = \
-        x_full[int(0.7 * len(x_full)):int(0.9 * len(x_full))], y_full[int(0.7 * len(y_full)):int(0.9 * len(y_full))], \
-        z_full[int(0.7 * len(z_full)):int(0.9 * len(z_full))]
+        x_full[:int(0.8 * len(x_full))], y_full[:int(0.8 * len(y_full))], z_full[:int(0.8 * len(z_full))]
     x_test, y_test, z_test = \
-        x_full[int(0.9 * len(x_full)):], y_full[int(0.9 * len(y_full)):], z_full[int(0.9 * len(z_full)):]
+        x_full[int(0.8 * len(x_full)):], y_full[int(0.8 * len(y_full)):], z_full[int(0.8 * len(z_full)):]
 
-    if os.path.exists(os.path.join(dirname, '../data/models/model.h5')):
-        model = keras.models.load_model(os.path.join(dirname, '../data/models/model.h5'))
-        print(model.evaluate(x_test, [y_test, z_test]))
+    if os.path.exists(os.path.join(dirname, '../data/models/root.joblib')) and os.path.exists(
+            os.path.join(dirname, '../data/models/quality.joblib')):
+        root_clf = joblib.load(os.path.join(dirname, '../data/models/root.joblib'))
+        quality_clf = joblib.load(os.path.join(dirname, '../data/models/quality.joblib'))
+        print(accuracy_score(y_test, root_clf.predict(x_test)))
+        for i in range(len(x_test)):
+            x_test[i] = np.roll(x_test[i], -y_test[i])
+        print(accuracy_score(z_test, quality_clf.predict(x_test)))
         return
 
-    chord_input = Input(shape=(12,), dtype=float, name='chord_input')
-    x = Dense(600, activation='relu')(chord_input)
-    x = Dense(300, activation='relu')(x)
-    root_output = Dense(len(roots), activation='softmax')(x)
-    y = concatenate([chord_input, root_output])
-    y = Dense(6000, activation='relu')(y)
-    y = Dense(3000, activation='relu')(y)
-    y = Dense(1000, activation='relu')(y)
-    quality_output = Dense(len(qualities), activation='softmax')(y)
+    root_clf = KNeighborsClassifier()
+    root_clf.fit(x_train, y_train)
+    print(accuracy_score(y_test, root_clf.predict(x_test)))
+    joblib.dump(root_clf, os.path.join(dirname, '../data/models/root.joblib'))
 
-    model = Model(inputs=chord_input, outputs=[root_output, quality_output])
-    model.compile(loss="sparse_categorical_crossentropy", optimizer="sgd", metrics=["accuracy"])
-    model.fit(x_train, [y_train, z_train], epochs=100, validation_data=(x_valid, [y_valid, z_valid]))
+    assert len(x_train) == len(y_train) == len(z_train)
+    for i in range(len(x_train)):
+        x_train[i] = np.roll(x_train[i], -y_train[i])
+    assert len(x_test) == len(y_test) == len(z_test)
+    for i in range(len(x_test)):
+        x_test[i] = np.roll(x_test[i], -y_test[i])
 
-    print(model.evaluate(x_test, [y_test, z_test]))
-    model.save(os.path.join(dirname, '../data/models/model.h5'))
+    quality_clf = MLPClassifier(max_iter=500)
+    quality_clf.fit(x_train, z_train)
+    print(accuracy_score(z_test, quality_clf.predict(x_test)))
+    joblib.dump(quality_clf, os.path.join(dirname, '../data/models/quality.joblib'))
 
 
 def analyze(y: np.ndarray) -> list:
-    def get_root(n: np.ndarray) -> str:
-        return list(roots.keys())[n.argmax()]
+    def get_root(n: int) -> str:
+        return list(roots.keys())[n]
 
-    def get_quality(n: np.ndarray) -> str:
-        return '' if list(qualities.keys())[n.argmax()] == 'M' else list(qualities.keys())[n.argmax()]
+    def get_quality(n: int) -> str:
+        return '' if list(qualities.keys())[n] == 'M' else list(qualities.keys())[n]
 
-    model = keras.models.load_model(os.path.join(dirname, '../data/models/model.h5'))
-    y_prob = model.predict(y)
-    root_prob, quality_prob = y_prob[0], y_prob[1]
+    if not (os.path.exists(os.path.join(dirname, '../data/models/root.joblib')) and os.path.exists(
+            os.path.join(dirname, '../data/models/quality.joblib'))):
+        _train()
+
+    root_clf = joblib.load(os.path.join(dirname, '../data/models/root.joblib'))
+    quality_clf = joblib.load(os.path.join(dirname, '../data/models/quality.joblib'))
+    root_prob = root_clf.predict(y)
+    assert len(y) == len(root_prob)
+    for i in range(len(y)):
+        y[i] = np.roll(y[i], -root_prob[i])
+    quality_prob = quality_clf.predict(y)
+
     assert len(root_prob) == len(quality_prob)
     pred = [(lambda a, b: 'N' if a == 'N' or b == 'N' else Chord(a + b))
             (get_root(root_prob[i]), get_quality(quality_prob[i])) for i in range(len(root_prob))]

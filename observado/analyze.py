@@ -10,8 +10,8 @@ from sklearn.metrics import accuracy_score
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.neural_network import MLPClassifier
 
-import src.utils as utils
-from src.chords import Chord
+import observado.utils as utils
+from observado.chords import Chord
 
 excepted = ('sus2', 'sus4', 'aug', 'dim', 'dim7', 'ø7')
 chord_table = {k: v for (k, v) in utils.chord_table.items() if k not in excepted}

@@ -1,4 +1,4 @@
-from src.chords import Chord, Pattern
+from observado.chords import Chord, Pattern
 
 
 class MIDIPattern(Pattern):

@@ -1,6 +1,6 @@
 import unittest
 
-from src.utils import *
+from observado.utils import *
 
 
 class MyTestCase(unittest.TestCase):

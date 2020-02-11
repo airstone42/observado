@@ -4,9 +4,9 @@ import sys
 import librosa
 import numpy as np
 
-from src import utils
-from src.chords import Chord
-from src.analyze import analyze
+from observado import utils
+from observado.chords import Chord
+from observado.analyze import analyze
 
 
 def main():

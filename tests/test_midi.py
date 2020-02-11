@@ -1,6 +1,6 @@
 import unittest
 
-from src.midi import *
+from observado.midi import *
 
 
 class MIDITestCase(unittest.TestCase):

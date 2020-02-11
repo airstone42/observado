@@ -2,7 +2,7 @@ import re
 
 import numpy as np
 
-from src import utils
+from observado import utils
 
 
 class Note(object):

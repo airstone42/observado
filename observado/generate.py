@@ -9,8 +9,8 @@ import numpy as np
 import pandas
 from tqdm import tqdm
 
-from src import utils
-from src.midi import *
+from observado import utils
+from observado.midi import *
 
 dirname = os.path.dirname(__file__)
 all_notes = utils.all_notes

@@ -30,6 +30,9 @@ class Note(object):
         except ValueError as e:
             raise e
 
+    def __hash__(self):
+        return hash(str(self))
+
     def __repr__(self):
         return 'Note({})'.format(self._note)
 

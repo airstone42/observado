@@ -1,20 +1,15 @@
 from observado.lib.chords import Chord, Pattern
 
 
-class MIDIPattern(Pattern):
+# Pattern of MIDI files
+class MIDI(Pattern):
     # MIDI note numbers of C3 to B3, C4 to B4
     bass = [x for x in range(48, 59 + 1)]
     alto = [x for x in range(60, 71 + 1)]
 
     def __init__(self, chord):
         super().__init__(chord)
-        self.component: list = self._calculate()
-
-    def _calculate(self) -> list:
-        bass = [self.bass[self.chord.bass.value()]]
-        # Pick notes by matching array.
-        alto = [self.alto[x] for x in range(len(self.array)) if self.array[x]]
-        return sorted(bass + alto)
+        self.component: list = self._calc()
 
     def __repr__(self):
         return 'MIDIPattern({!r})'.format(self.__dict__)
@@ -22,15 +17,19 @@ class MIDIPattern(Pattern):
     def __str__(self):
         return 'MIDIPattern({}, {})'.format(str(self.chord), str(self.component))
 
+    def _calc(self) -> list:
+        bass = [self.bass[self.chord.bass.value()]]
+        # Pick notes by matching array.
+        alto = [self.alto[x] for x in range(len(self.array)) if self.array[x]]
+        return sorted(bass + alto)
+
 
 # For generating chord sounds for several seconds with different instruments.
-class SingleChordContent(object):
+class MIDIChord(object):
     # MIDI header, <'Mthd'><length><format><number of tracks><division>
     _MThd: str = '4d 54 68 64 00 00 00 06 00 01 00 01 00 80'
-
     # MIDI track type
     _MTrk_type: str = '4d 54 72 6b'
-
     # MIDI instruments
     inst_table = [0, 1, 2, 10, 12, 24, 25, 26, 27, 40, 41, 42, 48, 49, 54, 55, 56, 57, 80, 81, 88, 89, 90]
 
@@ -82,14 +81,14 @@ class SingleChordContent(object):
     def __init__(self, pattern, instrument=0, method=0):
         try:
             if isinstance(pattern, str):
-                pattern = MIDIPattern(pattern)
+                pattern = MIDI(pattern)
             elif isinstance(pattern, Chord):
-                pattern = MIDIPattern(pattern)
-            elif isinstance(pattern, Pattern) and not isinstance(pattern, MIDIPattern):
-                pattern = MIDIPattern(pattern.chord)
-            elif not isinstance(pattern, MIDIPattern):
+                pattern = MIDI(pattern)
+            elif isinstance(pattern, Pattern) and not isinstance(pattern, MIDI):
+                pattern = MIDI(pattern.chord)
+            elif not isinstance(pattern, MIDI):
                 raise ValueError
-            self.pattern: MIDIPattern = pattern
+            self.pattern: MIDI = pattern
             if instrument in self.inst_table:
                 self.inst = instrument
             if method in self.play_table.keys():
@@ -113,12 +112,9 @@ class SingleChordContent(object):
 
     def _track(self) -> str:
         instrument = 'c0' + '{:02x}'.format(self.inst) + '00'
-
         # 120 bpm
         tempo = 'ff 51 03 07 A1 20 00'
-
         event = self.play_table[self.method](self)
-
         end = 'ff 2f 00'
 
         data = instrument + tempo + event + end

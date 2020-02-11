@@ -33,7 +33,7 @@ class ChordTestCase(unittest.TestCase):
         self.assertIsInstance(Chord('C#dim7/Gb'), Chord)
         self.assertIsInstance(Chord('Bbadd6sus2/Gb'), Chord)
         chord = Chord('Bbmaj7sus4/A')
-        self.assertEqual(str(chord), 'Chord(Bbmaj7sus4/A)')
+        self.assertEqual(str(chord), 'Bbmaj7sus4/A')
         self.assertEqual(chord.root, Note('Bb'))
         self.assertEqual(chord.bass, Note('A'))
         self.assertEqual(chord.quality, 'maj7sus4')

@@ -7,9 +7,7 @@ from observado.lib import utils
 
 class Note(object):
     value_table = utils.note_values
-
     alt_table = utils.note_alts
-
     notes = utils.all_notes
 
     # Capitalize musical notes name.
@@ -47,9 +45,9 @@ class Note(object):
             if re.match(pattern, other):
                 other = [x for x in re.split(pattern, other) if x][0]
             other = self.upper(other)
-            return True if self._note == other or (
-                    self._note in self.alt_table and self.alt_table[self._note] == other) or (
-                                   self._note in ivt_table and ivt_table[self._note] == other) else False
+            return True if self._note == other or \
+                           (self._note in self.alt_table and self.alt_table[self._note] == other) \
+                           or (self._note in ivt_table and ivt_table[self._note] == other) else False
         except ValueError:
             return False
 
@@ -64,8 +62,8 @@ class Note(object):
 
 
 class Chord(object):
-    pattern = r'([A-G|a-g][#|b]?)((add6|7|maj7)?sus(2|4)?|((m|aug)?add6)|m?maj7|[m|ø]7?|9|11|13|((aug|dim)?(' \
-              r'7|maj7|add9)?)?)/?([A-G|a-g][#|b]?)?'
+    pattern = r'([A-G|a-g][#|b]?)((add6|7|maj7)?sus(2|4)?|((m|aug)?add6)|m?maj7|[m|ø]7?|9|11|13|' \
+              r'((aug|dim)?(7|maj7|add9)?)?)/?([A-G|a-g][#|b]?)?'
 
     def __init__(self, notation: str):
         try:
@@ -87,7 +85,7 @@ class Chord(object):
         return 'Chord({!r})'.format(self.__dict__)
 
     def __str__(self):
-        return 'Chord({})'.format(self.notation)
+        return '{}'.format(self.notation)
 
 
 class Pattern(object):

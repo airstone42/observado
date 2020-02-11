@@ -13,7 +13,7 @@ def main():
     filename = sys.argv[1] if len(sys.argv) > 1 else librosa.util.example_audio_file()
     y, _ = librosa.load(filename)
     b, t = utils.beats(y)
-    y = utils.chroma_cens(y)
+    y = utils.chroma(y, 'stft')
     b = np.insert(b, 0, 0)
     b = np.append(b, y.shape[1] - 1)
     chords = analyze(y.transpose())

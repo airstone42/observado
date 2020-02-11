@@ -63,11 +63,10 @@ def basic_generate():
 
 
 def midi_generate():
-
     def generate(chord):
-        for i in SingleChordContent.inst_table:
-            for j in SingleChordContent.play_table.keys():
-                p = SingleChordContent(chord, i, j)
+        for i in MIDIChord.inst_table:
+            for j in MIDIChord.play_table.keys():
+                p = MIDIChord(chord, i, j)
                 filename = p.pattern.chord.notation + '_' + str(p.inst) + '_' + str(p.method)
                 p.write(os.path.join(dirname, '../data/midi/{}.mid'.format(filename)))
 
@@ -81,9 +80,9 @@ def midi_generate():
 
 def wave_generate():
     def generate(chord):
-        for i in SingleChordContent.inst_table:
-            for j in SingleChordContent.play_table.keys():
-                p = SingleChordContent(chord, i, j)
+        for i in MIDIChord.inst_table:
+            for j in MIDIChord.play_table.keys():
+                p = MIDIChord(chord, i, j)
                 filename = p.pattern.chord.notation + '_' + str(p.inst) + '_' + str(p.method)
                 midi_name = os.path.join(dirname, '../data/midi/{}.mid'.format(filename))
                 wave_name = os.path.join(dirname, '../data/waves/{}.wav'.format(filename))
@@ -122,45 +121,44 @@ def wave_generate():
 
 
 def wave_feature_generate():
-    names = {utils.chroma_cqt: 'cqt', utils.chroma_stft: 'stft', utils.chroma_cens: 'cens',
-             utils.chroma_cqtx: 'enhanced_cqt'}
-    paths = [os.path.join(dirname, x) for x in ['../data/features/wav_{}.csv'.format(name) for name in names.values()]]
+    storage = {'cqt': [], 'stft': [], 'cens': [], 'enhanced_cqt': []}
+
+    paths = [os.path.join(dirname, x) for x in ['../data/features/wav_{}.csv'.format(name) for name in storage.keys()]]
     existence = [os.path.exists(x) for x in paths]
     if all(existence):
         return
 
-    storage = {utils.chroma_cqt: [], utils.chroma_stft: [], utils.chroma_cens: [], utils.chroma_cqtx: []}
-
     def generate(chord):
-        for i in SingleChordContent.inst_table:
-            for j in SingleChordContent.play_table.keys():
-                p = SingleChordContent(chord, i, j)
+        for i in MIDIChord.inst_table:
+            for j in MIDIChord.play_table.keys():
+                p = MIDIChord(chord, i, j)
                 inst = str(p.inst)
                 play = str(p.method)
                 p = p.pattern
                 filename = p.chord.notation + '_' + inst + '_' + play
                 wave_name = os.path.join(dirname, '../data/waves/{}.wav'.format(filename))
                 notes = [x for x in all_notes if x not in utils.note_alts.keys()]
-                extra = {'notation': p.chord.notation, 'root': str(p.chord.root), 'quality': p.chord.quality, 'bass': str(p.chord.bass)}
+                extra = {'notation': p.chord.notation, 'root': str(p.chord.root), 'quality': p.chord.quality,
+                         'bass': str(p.chord.bass)}
 
                 duration = librosa.get_duration(filename=wave_name)
                 # Cut silent part for generated waves files.
                 # Less computation than librosa.effects.trim().
                 y, _ = librosa.load(wave_name, duration=duration - 2)
                 for method in storage.keys():
-                    chroma = utils.means(method(y))
+                    chroma = utils.means(utils.chroma(y, method))
                     chroma = dict(zip(notes, chroma.tolist()))
-                    extra['method'] = names[method]
+                    extra['method'] = method
                     storage[method].append({**chroma, **extra})
 
     print('Extracting features from WAV files...')
     multi_run(generate, all_chords)
 
-    for function, name in names.items():
+    for name in storage.keys():
         try:
             with open(os.path.join(dirname, '../data/features/wav_{}.csv'.format(name)), 'xt', encoding="utf-8",
                       newline='\n') as f:
-                pandas.DataFrame(storage[function]).to_csv(f, index=False, line_terminator='\n')
+                pandas.DataFrame(storage[name]).to_csv(f, index=False, line_terminator='\n')
         except FileExistsError:
             pass
         except Exception as e:
@@ -180,7 +178,7 @@ def noise_feature_generate():
             templates.append(full * r)
 
     data = []
-    while len(data) < len(SingleChordContent.inst_table) + len(SingleChordContent.play_table):
+    while len(data) < len(MIDIChord.inst_table) + len(MIDIChord.play_table):
         r = random.random()
         if r < noise:
             notes = [x for x in all_notes if x not in utils.note_alts.keys()]

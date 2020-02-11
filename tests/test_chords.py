@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 import unittest
 
-from observado.chords import *
+from observado.lib.chords import *
 
 
 class ChordTestCase(unittest.TestCase):

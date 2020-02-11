@@ -4,8 +4,8 @@ import sys
 import librosa
 import numpy as np
 
-from observado import utils
-from observado.chords import Chord
+from observado.lib import utils
+from observado.lib.chords import Chord
 from observado.analyze import analyze
 
 

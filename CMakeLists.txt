@@ -6,11 +6,12 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
-find_package(Qt5 COMPONENTS Widgets REQUIRED)
+find_package(Qt5 COMPONENTS Core Multimedia Widgets REQUIRED)
 
 add_executable(Observado
         ui/main.cpp
         ui/mainwindow.cpp
+        ui/mediawidget.cpp
         )
 
-target_link_libraries(Observado PRIVATE Qt5::Widgets)
+target_link_libraries(Observado PRIVATE Qt5::Core Qt5::Multimedia Qt5::Widgets)

@@ -1,7 +1,13 @@
 __pycache__
+.clang-format
 .env
 .idea
+.vs
 .vscode
+
+CMakeLists.txt.user
+cmake-build-*
+out
 
 /data/midi/*
 /data/models/*

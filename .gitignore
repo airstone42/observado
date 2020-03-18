@@ -1,11 +1,11 @@
 __pycache__
-.clang-format
 .env
 .idea
 .vs
 .vscode
 
 CMakeLists.txt.user
+CMakeSettings.json
 cmake-build-*
 out
 

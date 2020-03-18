@@ -7,18 +7,21 @@
 class MediaWidget : public QWidget {
     Q_OBJECT
 public:
-    explicit MediaWidget(QUrl &&fileUrl = QUrl(), QWidget *parent = nullptr);
+    explicit MediaWidget(QWidget *parent = nullptr);
 
     ~MediaWidget() override;
 
 public slots:
+    void toggleOpen();
     void togglePlay();
     void toggleStop();
 
 private:
+    void updateMedia(const QUrl &url);
     void updateIcon(QMediaPlayer::State previous);
 
     QBoxLayout *layout = nullptr;
+    QAbstractButton *openButton = nullptr;
     QAbstractButton *playButton = nullptr;
     QAbstractButton *stopButton = nullptr;
 

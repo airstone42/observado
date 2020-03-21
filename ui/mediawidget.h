@@ -15,15 +15,19 @@ public slots:
     void toggleOpen();
     void togglePlay();
     void toggleStop();
+    void setPosition(qint64 position);
 
 private:
     void updateMedia(const QUrl &url);
     void updateIcon(QMediaPlayer::State previous);
+    void updatePosition(qint64 position);
+    void updateDuration(qint64 duration);
 
     QBoxLayout *layout = nullptr;
     QAbstractButton *openButton = nullptr;
     QAbstractButton *playButton = nullptr;
     QAbstractButton *stopButton = nullptr;
+    QAbstractSlider *positionSlider = nullptr;
 
     QUrl fileUrl;
     QMediaPlayer *mediaPlayer = nullptr;

@@ -17,14 +17,21 @@ MediaWidget::MediaWidget(QWidget *parent)
     stopButton->setDisabled(true);
     connect(stopButton, &QAbstractButton::clicked, this, &MediaWidget::toggleStop);
 
+    positionSlider = new QSlider(Qt::Horizontal, parent);
+    positionSlider->setDisabled(true);
+    connect(positionSlider, &QAbstractSlider::valueChanged, this, &MediaWidget::setPosition);
+
     mediaPlayer = new QMediaPlayer(parent);
     mediaPlayer->setVolume(50);
     connect(mediaPlayer, &QMediaPlayer::stateChanged, this, &MediaWidget::updateIcon);
+    connect(mediaPlayer, &QMediaPlayer::durationChanged, this, &MediaWidget::updateDuration);
+    connect(mediaPlayer, &QMediaPlayer::positionChanged, this, &MediaWidget::updatePosition);
 
     layout = new QHBoxLayout(parent);
     layout->addWidget(openButton);
     layout->addWidget(stopButton);
     layout->addWidget(playButton);
+    layout->addWidget(positionSlider);
     this->setLayout(layout);
 }
 
@@ -52,11 +59,18 @@ void MediaWidget::toggleStop()
     mediaPlayer->stop();
 }
 
+void MediaWidget::setPosition(qint64 position)
+{
+    if (qAbs(mediaPlayer->position() - position) > 99)
+        mediaPlayer->setPosition(position);
+}
+
 void MediaWidget::updateMedia(const QUrl &url)
 {
     fileUrl = url;
     playButton->setEnabled(true);
     stopButton->setEnabled(true);
+    positionSlider->setEnabled(true);
 
     mediaPlayer->setMedia(url);
     mediaPlayer->play();
@@ -68,6 +82,18 @@ void MediaWidget::updateIcon(QMediaPlayer::State previous)
         playButton->setIcon(style()->standardIcon(QStyle::SP_MediaPause));
     else
         playButton->setIcon(style()->standardIcon(QStyle::SP_MediaPlay));
+}
+
+void MediaWidget::updatePosition(qint64 position)
+{
+    positionSlider->setValue(position);
+}
+
+void MediaWidget::updateDuration(qint64 duration)
+{
+    positionSlider->setRange(0, duration);
+    positionSlider->setEnabled(duration > 0);
+    positionSlider->setPageStep(static_cast<int>(duration / 10));
 }
 
 MediaWidget::~MediaWidget() = default;

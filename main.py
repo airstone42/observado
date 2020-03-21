@@ -32,7 +32,7 @@ def main():
     b = np.append(b, y.shape[1] - 1)
     chords, time_frames = calc(y.transpose(), b)
     for i in range(len(time_frames) - 1):
-        print('{:.4f}-{:.4f}: {}'.format(time_frames[i], time_frames[i + 1], chords[i]))
+        print('{:.2f} {:.2f} {}'.format(time_frames[i], time_frames[i + 1], chords[i]))
 
 
 if __name__ == '__main__':

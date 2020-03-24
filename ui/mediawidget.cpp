@@ -1,5 +1,7 @@
 #include "mediawidget.h"
 
+#include <QTime>
+
 MediaWidget::MediaWidget(QWidget *parent)
     : QWidget(parent)
 {
@@ -21,6 +23,9 @@ MediaWidget::MediaWidget(QWidget *parent)
     positionSlider->setDisabled(true);
     connect(positionSlider, &QAbstractSlider::valueChanged, this, &MediaWidget::setPosition);
 
+    nowLabel = new QLabel(tr("--:--"), this);
+    durationLabel = new QLabel(tr("--:--"), this);
+
     mediaPlayer = new QMediaPlayer(parent);
     mediaPlayer->setVolume(50);
     connect(mediaPlayer, &QMediaPlayer::stateChanged, this, &MediaWidget::updateIcon);
@@ -31,7 +36,9 @@ MediaWidget::MediaWidget(QWidget *parent)
     layout->addWidget(openButton);
     layout->addWidget(stopButton);
     layout->addWidget(playButton);
+    layout->addWidget(nowLabel);
     layout->addWidget(positionSlider);
+    layout->addWidget(durationLabel);
     this->setLayout(layout);
 }
 
@@ -91,9 +98,16 @@ void MediaWidget::updatePosition(qint64 position)
 
 void MediaWidget::updateDuration(qint64 duration)
 {
+    setDurationLabel(duration);
     positionSlider->setRange(0, duration);
     positionSlider->setEnabled(duration > 0);
     positionSlider->setPageStep(static_cast<int>(duration / 10));
+}
+
+void MediaWidget::setDurationLabel(qint64 duration)
+{
+    auto time = QTime(0, 0).addMSecs(duration);
+    durationLabel->setText(time.toString("mm:ss"));
 }
 
 MediaWidget::~MediaWidget() = default;

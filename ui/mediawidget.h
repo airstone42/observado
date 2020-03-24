@@ -22,12 +22,15 @@ private:
     void updateIcon(QMediaPlayer::State previous);
     void updatePosition(qint64 position);
     void updateDuration(qint64 duration);
+    void setDurationLabel(qint64 duration);
 
     QBoxLayout *layout = nullptr;
     QAbstractButton *openButton = nullptr;
     QAbstractButton *playButton = nullptr;
     QAbstractButton *stopButton = nullptr;
     QAbstractSlider *positionSlider = nullptr;
+    QLabel *nowLabel = nullptr;
+    QLabel *durationLabel = nullptr;
 
     QUrl fileUrl;
     QMediaPlayer *mediaPlayer = nullptr;

@@ -7,6 +7,7 @@
 #include <QStyle>
 #include <QTime>
 #include <QToolButton>
+#include <QVBoxLayout>
 
 MediaWidget::MediaWidget(QWidget *parent)
     : QWidget(parent)
@@ -38,14 +39,20 @@ MediaWidget::MediaWidget(QWidget *parent)
     connect(mediaPlayer, &QMediaPlayer::durationChanged, this, &MediaWidget::updateDuration);
     connect(mediaPlayer, &QMediaPlayer::positionChanged, this, &MediaWidget::updatePosition);
 
-    layout = new QHBoxLayout(parent);
-    layout->addWidget(openButton);
-    layout->addWidget(stopButton);
-    layout->addWidget(playButton);
-    layout->addWidget(positionLabel);
-    layout->addWidget(positionSlider);
-    layout->addWidget(durationLabel);
-    this->setLayout(layout);
+    buttonLayout = new QHBoxLayout(parent);
+    buttonLayout->addWidget(openButton);
+    buttonLayout->addWidget(stopButton);
+    buttonLayout->addWidget(playButton);
+
+    barLayout = new QHBoxLayout(parent);
+    barLayout->addWidget(positionLabel);
+    barLayout->addWidget(positionSlider);
+    barLayout->addWidget(durationLabel);
+
+    mainLayout = new QVBoxLayout(parent);
+    mainLayout->addLayout(buttonLayout);
+    mainLayout->addLayout(barLayout);
+    this->setLayout(mainLayout);
 }
 
 void MediaWidget::toggleOpen()

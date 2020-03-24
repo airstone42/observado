@@ -35,7 +35,7 @@ private:
     QAbstractButton *playButton = nullptr;
     QAbstractButton *stopButton = nullptr;
     QAbstractSlider *positionSlider = nullptr;
-    QLabel *nowLabel = nullptr;
+    QLabel *positionLabel = nullptr;
     QLabel *durationLabel = nullptr;
 
     QUrl fileUrl;

@@ -7,8 +7,8 @@ int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
     MainWindow w;
-    auto m = new MediaWidget();
-    w.setCentralWidget(m);
+    MediaWidget m;
+    w.setCentralWidget(&m);
     w.show();
     return a.exec();
 }

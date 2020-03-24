@@ -1,7 +1,13 @@
 #ifndef MEDIAWIDGET_H
 #define MEDIAWIDGET_H
 
+#include <QAbstractButton>
+#include <QAbstractSlider>
+#include <QBoxLayout>
+#include <QLabel>
 #include <QMediaPlayer>
+#include <QUrl>
+#include <QtGlobal>
 #include <QtWidgets>
 
 class MediaWidget : public QWidget {

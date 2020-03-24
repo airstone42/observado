@@ -1,6 +1,12 @@
 #include "mediawidget.h"
 
+#include <QFileDialog>
+#include <QHBoxLayout>
+#include <QSlider>
+#include <QStandardPaths>
+#include <QStyle>
 #include <QTime>
+#include <QToolButton>
 
 MediaWidget::MediaWidget(QWidget *parent)
     : QWidget(parent)

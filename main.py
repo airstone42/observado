@@ -23,16 +23,26 @@ def calc(chroma: np.ndarray, beats: np.ndarray) -> (list, list):
     return chords, librosa.frames_to_time(root_parted)
 
 
-def main():
-    filename = sys.argv[1] if len(sys.argv) > 1 else librosa.util.example_audio_file()
+def run(filename: str) -> str:
+    if not filename:
+        filename = librosa.util.example_audio_file()
     y, _ = librosa.load(filename)
     b, t = utils.beats(y)
     y = utils.chroma(y, 'cqt')
     b = np.insert(b, 0, 0)
     b = np.append(b, y.shape[1] - 1)
     chords, time_frames = calc(y.transpose(), b)
+    s = ''
     for i in range(len(time_frames) - 1):
-        print('{:.2f} {:.2f} {}'.format(time_frames[i], time_frames[i + 1], chords[i]))
+        s += '{:.2f} {:.2f} {}'.format(time_frames[i], time_frames[i + 1], chords[i])
+        if i != len(time_frames) - 2:
+            s += '\n'
+    return s
+
+
+def main():
+    filename = sys.argv[1] if len(sys.argv) > 1 else librosa.util.example_audio_file()
+    print(run(filename))
 
 
 if __name__ == '__main__':

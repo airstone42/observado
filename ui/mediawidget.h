@@ -30,10 +30,12 @@ private:
     void updateDuration(qint64 duration);
     void setDurationLabel(qint64 duration);
 
+    QBoxLayout *fileLayout = nullptr;
     QBoxLayout *buttonLayout = nullptr;
     QBoxLayout *barLayout = nullptr;
     QBoxLayout *mainLayout = nullptr;
 
+    QLabel *fileLabel = nullptr;
     QAbstractButton *openButton = nullptr;
     QAbstractButton *playButton = nullptr;
     QAbstractButton *stopButton = nullptr;

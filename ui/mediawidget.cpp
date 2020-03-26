@@ -6,6 +6,7 @@
 #include <QSlider>
 #include <QStandardPaths>
 #include <QStyle>
+#include <Qt>
 #include <QTime>
 #include <QToolButton>
 #include <QVBoxLayout>
@@ -13,6 +14,8 @@
 MediaWidget::MediaWidget(QWidget *parent)
     : QWidget(parent)
 {
+    fileLabel = new QLabel(parent);
+
     openButton = new QToolButton(parent);
     openButton->setIcon(style()->standardIcon(QStyle::SP_DirOpenIcon));
     connect(openButton, &QAbstractButton::clicked, this, &MediaWidget::toggleOpen);
@@ -40,6 +43,9 @@ MediaWidget::MediaWidget(QWidget *parent)
     connect(mediaPlayer, &QMediaPlayer::durationChanged, this, &MediaWidget::updateDuration);
     connect(mediaPlayer, &QMediaPlayer::positionChanged, this, &MediaWidget::updatePosition);
 
+    fileLayout = new QHBoxLayout(parent);
+    fileLayout->addWidget(fileLabel, 0, Qt::AlignHCenter);
+
     buttonLayout = new QHBoxLayout(parent);
     buttonLayout->addWidget(openButton);
     buttonLayout->addWidget(stopButton);
@@ -51,6 +57,7 @@ MediaWidget::MediaWidget(QWidget *parent)
     barLayout->addWidget(durationLabel);
 
     mainLayout = new QVBoxLayout(parent);
+    mainLayout->addLayout(fileLayout);
     mainLayout->addLayout(buttonLayout);
     mainLayout->addLayout(barLayout);
     this->setLayout(mainLayout);
@@ -89,6 +96,7 @@ void MediaWidget::setPosition(qint64 position)
 void MediaWidget::updateMedia(const QUrl &url)
 {
     fileUrl = url;
+    fileLabel->setText(fileUrl.fileName());
     playButton->setEnabled(true);
     stopButton->setEnabled(true);
     positionSlider->setEnabled(true);
@@ -120,7 +128,7 @@ void MediaWidget::updateDuration(qint64 duration)
     setDurationLabel(duration);
     positionSlider->setRange(0, duration);
     positionSlider->setEnabled(duration > 0);
-    positionSlider->setPageStep(static_cast<int>(duration / 10));
+    positionSlider->setPageStep(static_cast<int>(duration / 5));
 }
 
 void MediaWidget::setDurationLabel(qint64 duration)

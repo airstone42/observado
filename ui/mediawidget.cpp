@@ -1,4 +1,5 @@
 #include "mediawidget.h"
+#include "core.h"
 
 #include <QFileDialog>
 #include <QHBoxLayout>
@@ -91,6 +92,9 @@ void MediaWidget::updateMedia(const QUrl &url)
     playButton->setEnabled(true);
     stopButton->setEnabled(true);
     positionSlider->setEnabled(true);
+
+    Core core(url);
+    core.run();
 
     mediaPlayer->setMedia(url);
     mediaPlayer->play();

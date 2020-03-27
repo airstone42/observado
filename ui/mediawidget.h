@@ -1,6 +1,3 @@
-#ifndef MEDIAWIDGET_H
-#define MEDIAWIDGET_H
-
 #include <QAbstractButton>
 #include <QAbstractSlider>
 #include <QBoxLayout>
@@ -9,6 +6,9 @@
 #include <QUrl>
 #include <QtGlobal>
 #include <QtWidgets>
+
+#ifndef MEDIAWIDGET_H
+#define MEDIAWIDGET_H
 
 class MediaWidget : public QWidget {
     Q_OBJECT

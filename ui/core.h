@@ -1,9 +1,9 @@
-#ifndef CORE_H
-#define CORE_H
-
 #include <QList>
 #include <QString>
 #include <QUrl>
+
+#ifndef CORE_H
+#define CORE_H
 
 struct Record {
     QString begin;

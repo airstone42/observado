@@ -1,18 +1,18 @@
 #include "mediawidget.h"
-#include "core.h"
 
 #include <QFileDialog>
 #include <QHBoxLayout>
 #include <QSlider>
 #include <QStandardPaths>
 #include <QStyle>
-#include <Qt>
 #include <QTime>
 #include <QToolButton>
 #include <QVBoxLayout>
+#include <Qt>
 
 MediaWidget::MediaWidget(QWidget *parent)
     : QWidget(parent)
+    , core()
 {
     fileLabel = new QLabel(parent);
 
@@ -101,7 +101,7 @@ void MediaWidget::updateMedia(const QUrl &url)
     stopButton->setEnabled(true);
     positionSlider->setEnabled(true);
 
-    Core core(url);
+    core.setUrl(fileUrl);
     core.run();
 
     mediaPlayer->setMedia(url);

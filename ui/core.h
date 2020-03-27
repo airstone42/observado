@@ -1,13 +1,21 @@
 #include <QList>
 #include <QString>
+#include <QTime>
 #include <QUrl>
+
+#define PY_SSIZE_T_CLEAN
+#ifdef slots
+#undef slots
+#include <Python.h>
+#define slots Q_SLOTS
+#endif
 
 #ifndef CORE_H
 #define CORE_H
 
 struct Record {
-    QString begin;
-    QString end;
+    QTime begin;
+    QTime end;
     QString chord;
 };
 
@@ -22,11 +30,15 @@ public:
     ~Core();
 
     bool run();
+    void setUrl(const QUrl &url);
 
-    static QString pyModule;
-    static QString pyFunction;
+    static QString PY_MODULE;
+    static QString PY_FUNCTION;
 
 private:
+    PyObject *pyModule = nullptr, *pyFunction = nullptr;
+
+    bool available;
     QUrl url;
     QList<Record> records;
 

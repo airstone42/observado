@@ -1,23 +1,33 @@
 #include "core.h"
 
-#include <QDebug>
+#include <stdexcept>
 #include <utility>
 
-#define PY_SSIZE_T_CLEAN
-#ifdef slots
-#undef slots
-#include <Python.h>
-#define slots Q_SLOTS
-#endif
+#include <QDebug>
+#include <QtGlobal>
 
-QString Core::pyModule = "main";
-QString Core::pyFunction = "run";
+QString Core::PY_MODULE = "main";
+QString Core::PY_FUNCTION = "run";
 
-Core::Core() = default;
+Core::Core()
+{
+    Py_Initialize();
+    try {
+        if (!(pyModule = PyImport_ImportModule(PY_MODULE.toStdString().c_str())))
+            throw std::runtime_error("Loading module failed!");
+        if (!(pyFunction = PyObject_GetAttrString(pyModule, PY_FUNCTION.toStdString().c_str())))
+            throw std::runtime_error("Loading function failed!");
+        available = true;
+    } catch (const std::runtime_error &e) {
+        available = false;
+        qWarning() << e.what();
+    }
+}
 
 Core::Core(QUrl url)
-    : url(std::move(url))
+    : Core()
 {
+    this->url = std::move(url);
 }
 
 bool Core::parse(const QString &pyResult)
@@ -31,40 +41,39 @@ bool Core::parse(const QString &pyResult)
             records.clear();
             return false;
         }
-        records.append(Record { words[0], words[1], words[2] });
+        auto begin = QTime(0, 0).addMSecs(static_cast<int>(words[0].toDouble() * 1000));
+        auto end = QTime(0, 0).addMSecs(static_cast<int>(words[1].toDouble() * 1000));
+        records.append(Record { begin, end, words[2] });
     }
     return true;
 }
 
 bool Core::run()
 {
-    Py_Initialize();
+    if (!available || url.isEmpty())
+        return false;
+    records.clear();
 
-    PyObject *module = nullptr, *function = nullptr, *result = nullptr;
-    if (!(module = PyImport_ImportModule(pyModule.toStdString().c_str()))) {
-        qDebug() << "Loading module failed!";
-        Py_Finalize();
+    PyObject *result = nullptr;
+    try {
+        if (!(result = PyObject_CallFunction(pyFunction, "s", url.toLocalFile().toStdString().c_str())))
+            throw std::runtime_error("Calling function failed!");
+        auto s = QString(PyUnicode_AsUTF8(result));
+        if (!parse(s))
+            throw std::runtime_error("Parsing result failed!");
+    } catch (const std::runtime_error &e) {
+        qWarning() << e.what();
         return false;
     }
-    if (!(function = PyObject_GetAttrString(module, pyFunction.toStdString().c_str()))) {
-        qDebug() << "Loading function failed!";
-        Py_Finalize();
-        return false;
-    }
-    if (!(result = PyObject_CallFunction(function, "s", url.toLocalFile().toStdString().c_str()))) {
-        qDebug() << "Calling function failed!";
-        Py_Finalize();
-        return false;
-    }
-    auto s = QString(PyUnicode_AsUTF8(result));
-    if (!parse(s)) {
-        qDebug() << "Parsing result failed!";
-        Py_Finalize();
-        return false;
-    }
-
-    Py_Finalize();
     return true;
 }
 
-Core::~Core() = default;
+void Core::setUrl(const QUrl &url)
+{
+    this->url = url;
+}
+
+Core::~Core()
+{
+    Py_Finalize();
+}

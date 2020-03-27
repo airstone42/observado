@@ -1,3 +1,5 @@
+#include "core.h"
+
 #include <QAbstractButton>
 #include <QAbstractSlider>
 #include <QBoxLayout>
@@ -16,7 +18,6 @@ public:
     explicit MediaWidget(QWidget *parent = nullptr);
 
     ~MediaWidget() override;
-
 public slots:
     void toggleOpen();
     void togglePlay();
@@ -29,6 +30,8 @@ private:
     void updatePosition(qint64 position);
     void updateDuration(qint64 duration);
     void setDurationLabel(qint64 duration);
+
+    Core core;
 
     QBoxLayout *fileLayout = nullptr;
     QBoxLayout *buttonLayout = nullptr;

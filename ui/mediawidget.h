@@ -5,6 +5,7 @@
 #include <QBoxLayout>
 #include <QLabel>
 #include <QMediaPlayer>
+#include <QTableWidget>
 #include <QUrl>
 #include <QtGlobal>
 #include <QtWidgets>
@@ -26,14 +27,14 @@ public slots:
 
 private:
     void updateMedia(const QUrl &url);
-    void updateIcon(QMediaPlayer::State previous);
+    void setIcon(QMediaPlayer::State previous);
     void updatePosition(qint64 position);
     void updateDuration(qint64 duration);
     void setDurationLabel(qint64 duration);
+    void setTable(bool available);
 
     Core core;
 
-    QBoxLayout *fileLayout = nullptr;
     QBoxLayout *buttonLayout = nullptr;
     QBoxLayout *barLayout = nullptr;
     QBoxLayout *mainLayout = nullptr;
@@ -45,6 +46,7 @@ private:
     QAbstractSlider *positionSlider = nullptr;
     QLabel *positionLabel = nullptr;
     QLabel *durationLabel = nullptr;
+    QTableWidget *recordTable = nullptr;
 
     QUrl fileUrl;
     QMediaPlayer *mediaPlayer = nullptr;

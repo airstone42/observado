@@ -1,5 +1,6 @@
 #include <QList>
 #include <QString>
+#include <QStringList>
 #include <QTime>
 #include <QUrl>
 
@@ -31,6 +32,7 @@ public:
 
     bool run();
     void setUrl(const QUrl &url);
+    QList<QStringList> recordItems();
 
     static QString PY_MODULE;
     static QString PY_FUNCTION;

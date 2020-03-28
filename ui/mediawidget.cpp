@@ -2,9 +2,11 @@
 
 #include <QFileDialog>
 #include <QHBoxLayout>
+#include <QHeaderView>
 #include <QSlider>
 #include <QStandardPaths>
 #include <QStyle>
+#include <QTableWidgetItem>
 #include <QTime>
 #include <QToolButton>
 #include <QVBoxLayout>
@@ -39,12 +41,12 @@ MediaWidget::MediaWidget(QWidget *parent)
 
     mediaPlayer = new QMediaPlayer(parent);
     mediaPlayer->setVolume(50);
-    connect(mediaPlayer, &QMediaPlayer::stateChanged, this, &MediaWidget::updateIcon);
+    connect(mediaPlayer, &QMediaPlayer::stateChanged, this, &MediaWidget::setIcon);
     connect(mediaPlayer, &QMediaPlayer::durationChanged, this, &MediaWidget::updateDuration);
     connect(mediaPlayer, &QMediaPlayer::positionChanged, this, &MediaWidget::updatePosition);
 
-    fileLayout = new QHBoxLayout(parent);
-    fileLayout->addWidget(fileLabel, 0, Qt::AlignHCenter);
+    recordTable = new QTableWidget(parent);
+    recordTable->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
 
     buttonLayout = new QHBoxLayout(parent);
     buttonLayout->addWidget(openButton);
@@ -57,9 +59,10 @@ MediaWidget::MediaWidget(QWidget *parent)
     barLayout->addWidget(durationLabel);
 
     mainLayout = new QVBoxLayout(parent);
-    mainLayout->addLayout(fileLayout);
+    mainLayout->addWidget(fileLabel, 0, Qt::AlignHCenter);
     mainLayout->addLayout(buttonLayout);
     mainLayout->addLayout(barLayout);
+    mainLayout->addWidget(recordTable, 0, Qt::AlignHCenter);
     this->setLayout(mainLayout);
 }
 
@@ -102,13 +105,13 @@ void MediaWidget::updateMedia(const QUrl &url)
     positionSlider->setEnabled(true);
 
     core.setUrl(fileUrl);
-    core.run();
+    setTable(core.run());
 
     mediaPlayer->setMedia(url);
     mediaPlayer->play();
 }
 
-void MediaWidget::updateIcon(QMediaPlayer::State previous)
+void MediaWidget::setIcon(QMediaPlayer::State previous)
 {
     if (previous == QMediaPlayer::PlayingState)
         playButton->setIcon(style()->standardIcon(QStyle::SP_MediaPause));
@@ -135,6 +138,23 @@ void MediaWidget::setDurationLabel(qint64 duration)
 {
     auto time = QTime(0, 0).addMSecs(duration);
     durationLabel->setText(time.toString("mm:ss"));
+}
+
+void MediaWidget::setTable(bool available)
+{
+    recordTable->setRowCount(0);
+    if (!available)
+        return;
+
+    recordTable->setColumnCount(3);
+    recordTable->setHorizontalHeaderLabels({ "begin", "end", "chord" });
+    for (const auto &item : core.recordItems()) {
+        recordTable->insertRow(recordTable->rowCount());
+        for (int i = 0; i < item.size(); i++)
+            [&](int i) {
+                recordTable->setItem(recordTable->rowCount() - 1, i, new QTableWidgetItem(item[i]));
+            }(i);
+    }
 }
 
 MediaWidget::~MediaWidget() = default;

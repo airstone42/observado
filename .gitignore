@@ -4,6 +4,13 @@ __pycache__
 .vs
 .vscode
 
+CMakeCache.txt
+CMakeFiles/
+Makefile
+Observado
+Observado_autogen/
+cmake_install.cmake
+
 CMakeLists.txt.user
 CMakeSettings.json
 cmake-build-*

@@ -37,6 +37,7 @@ private:
 
     QBoxLayout *buttonLayout = nullptr;
     QBoxLayout *barLayout = nullptr;
+    QBoxLayout *tableLayout = nullptr;
     QBoxLayout *mainLayout = nullptr;
 
     QLabel *fileLabel = nullptr;

@@ -47,6 +47,7 @@ MediaWidget::MediaWidget(QWidget *parent)
 
     recordTable = new QTableWidget(parent);
     recordTable->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+    recordTable->verticalHeader()->setVisible(false);
 
     buttonLayout = new QHBoxLayout(parent);
     buttonLayout->addWidget(openButton);
@@ -58,11 +59,14 @@ MediaWidget::MediaWidget(QWidget *parent)
     barLayout->addWidget(positionSlider);
     barLayout->addWidget(durationLabel);
 
+    tableLayout = new QVBoxLayout(parent);
+    tableLayout->addWidget(recordTable);
+
     mainLayout = new QVBoxLayout(parent);
     mainLayout->addWidget(fileLabel, 0, Qt::AlignHCenter);
     mainLayout->addLayout(buttonLayout);
     mainLayout->addLayout(barLayout);
-    mainLayout->addWidget(recordTable, 0, Qt::AlignHCenter);
+    mainLayout->addLayout(tableLayout);
     this->setLayout(mainLayout);
 }
 
@@ -152,9 +156,12 @@ void MediaWidget::setTable(bool available)
         recordTable->insertRow(recordTable->rowCount());
         for (int i = 0; i < item.size(); i++)
             [&](int i) {
-                recordTable->setItem(recordTable->rowCount() - 1, i, new QTableWidgetItem(item[i]));
+                auto twi = new QTableWidgetItem(item[i]);
+                twi->setTextAlignment(Qt::AlignHCenter);
+                recordTable->setItem(recordTable->rowCount() - 1, i, twi);
             }(i);
     }
+    recordTable->resizeColumnsToContents();
 }
 
 MediaWidget::~MediaWidget() = default;

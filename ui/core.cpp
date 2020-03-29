@@ -13,6 +13,11 @@ Core::Core()
 {
     Py_Initialize();
     try {
+        PyObject *sys = PyImport_ImportModule("sys");
+        PyObject *path = PyObject_GetAttrString(sys, "path");
+        if (!sys || !path)
+            throw std::runtime_error("Loading sys failed!");
+        PyList_Append(path, PyUnicode_FromString("."));
         if (!(pyModule = PyImport_ImportModule(PY_MODULE.toStdString().c_str())))
             throw std::runtime_error("Loading module failed!");
         if (!(pyFunction = PyObject_GetAttrString(pyModule, PY_FUNCTION.toStdString().c_str())))

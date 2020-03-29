@@ -91,7 +91,10 @@ void MediaWidget::togglePlay()
 
 void MediaWidget::toggleStop()
 {
-    mediaPlayer->stop();
+    if (mediaPlayer->state() == QMediaPlayer::StoppedState)
+        mediaPlayer->setPosition(0);
+    else
+        mediaPlayer->stop();
 }
 
 void MediaWidget::setPosition(qint64 position)

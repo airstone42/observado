@@ -11,6 +11,11 @@ Observado
 Observado_autogen/
 cmake_install.cmake
 
+*.vcxproj
+*.vcxproj.filters
+Observado.exe
+Observado.sln
+
 CMakeLists.txt.user
 CMakeSettings.json
 cmake-build-*

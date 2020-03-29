@@ -82,7 +82,7 @@ def _chroma_stft(y: np.ndarray) -> np.ndarray:
 
 
 def _chroma_cens(y: np.ndarray) -> np.ndarray:
-    return librosa.feature.chroma_cens(y=y, cqt_mode='hybrid')
+    return librosa.feature.chroma_cens(y=y, bins_per_octave=36)
 
 
 # Compute the mean of each piece of chromagram according to beat frames segmentation

@@ -78,15 +78,6 @@ void Core::setUrl(const QUrl &url)
     this->url = url;
 }
 
-QList<QStringList> Core::recordItems()
-{
-    QList<QStringList> items;
-    if (available)
-        for (const auto &record : records)
-            items.append({ record.begin.toString("mm:ss.zzz"), record.end.toString("mm:ss.zzz"), record.chord });
-    return items;
-}
-
 Core::~Core()
 {
     Py_Finalize();

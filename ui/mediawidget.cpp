@@ -156,11 +156,13 @@ void MediaWidget::setTable(bool available)
 
     recordTable->setColumnCount(3);
     recordTable->setHorizontalHeaderLabels({ "begin", "end", "chord" });
-    for (const auto &item : core.recordItems()) {
+    for (const auto &item : core.records) {
         recordTable->insertRow(recordTable->rowCount());
-        for (int i = 0; i < item.size(); i++)
+
+        QStringList recordItems({ item.begin.toString("mm:ss.zzz"), item.end.toString("mm:ss.zzz"), item.chord });
+        for (int i = 0; i < recordItems.size(); i++)
             [&](int i) {
-                auto twi = new QTableWidgetItem(item[i]);
+                auto twi = new QTableWidgetItem(recordItems[i]);
                 twi->setTextAlignment(Qt::AlignHCenter);
                 recordTable->setItem(recordTable->rowCount() - 1, i, twi);
             }(i);

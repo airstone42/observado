@@ -21,6 +21,8 @@ struct Record {
 };
 
 class Core {
+    friend class MediaWidget;
+
 public:
     Core();
     explicit Core(QUrl url);
@@ -32,7 +34,6 @@ public:
 
     bool run();
     void setUrl(const QUrl &url);
-    QList<QStringList> recordItems();
 
     static QString PY_MODULE;
     static QString PY_FUNCTION;

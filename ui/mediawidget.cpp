@@ -47,6 +47,7 @@ MediaWidget::MediaWidget(QWidget *parent)
 
     recordTable = new QTableWidget(parent);
     recordTable->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+    recordTable->horizontalHeader()->setStretchLastSection(true);
     recordTable->verticalHeader()->setVisible(false);
 
     buttonLayout = new QHBoxLayout(parent);
@@ -164,7 +165,6 @@ void MediaWidget::setTable(bool available)
                 recordTable->setItem(recordTable->rowCount() - 1, i, twi);
             }(i);
     }
-    recordTable->resizeColumnsToContents();
 }
 
 MediaWidget::~MediaWidget() = default;

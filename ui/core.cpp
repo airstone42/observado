@@ -1,10 +1,14 @@
 #include "core.h"
 
+#include <algorithm>
+#include <functional>
 #include <stdexcept>
 #include <utility>
 
 #include <QDebug>
 #include <QtGlobal>
+
+using std::placeholders::_1;
 
 QString Core::PY_MODULE = "main";
 QString Core::PY_FUNCTION = "run";
@@ -76,6 +80,17 @@ bool Core::run()
 void Core::setUrl(const QUrl &url)
 {
     this->url = url;
+}
+
+int Core::search(qint64 position)
+{
+    auto comp = [&](const Record &r, const qint64 position) {
+        int begin = QTime(0, 0).msecsTo(r.begin);
+        int end = QTime(0, 0).msecsTo(r.end);
+        return position >= begin && position <= end;
+    };
+    auto iter = std::find_if(records.begin(), records.end(), std::bind(comp, _1, position));
+    return iter - records.begin();
 }
 
 Core::~Core()

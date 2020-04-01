@@ -34,6 +34,7 @@ public:
 
     bool run();
     void setUrl(const QUrl &url);
+    int search(qint64 position);
 
     static QString PY_MODULE;
     static QString PY_FUNCTION;

@@ -132,6 +132,10 @@ void MediaWidget::updatePosition(qint64 position)
     positionSlider->setValue(position);
     auto time = QTime(0, 0).addMSecs(position);
     positionLabel->setText(time.toString("mm:ss"));
+
+    int index = core.search(position + 100);
+    if (index < recordTable->rowCount())
+        recordTable->selectRow(index);
 }
 
 void MediaWidget::updateDuration(qint64 duration)
@@ -160,12 +164,11 @@ void MediaWidget::setTable(bool available)
         recordTable->insertRow(recordTable->rowCount());
 
         QStringList recordItems({ item.begin.toString("mm:ss.zzz"), item.end.toString("mm:ss.zzz"), item.chord });
-        for (int i = 0; i < recordItems.size(); i++)
-            [&](int i) {
-                auto twi = new QTableWidgetItem(recordItems[i]);
-                twi->setTextAlignment(Qt::AlignHCenter);
-                recordTable->setItem(recordTable->rowCount() - 1, i, twi);
-            }(i);
+        for (int i = 0; i < recordItems.size(); i++) {
+            auto twi = new QTableWidgetItem(recordItems[i]);
+            twi->setTextAlignment(Qt::AlignHCenter);
+            recordTable->setItem(recordTable->rowCount() - 1, i, twi);
+        }
     }
 }
 

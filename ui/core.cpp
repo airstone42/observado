@@ -1,7 +1,6 @@
 #include "core.h"
 
 #include <algorithm>
-#include <functional>
 #include <stdexcept>
 #include <utility>
 
@@ -84,12 +83,12 @@ void Core::setUrl(const QUrl &url)
 
 int Core::search(qint64 position)
 {
-    auto comp = [&](const Record &r, const qint64 position) {
+    auto comp = [&](const Record &r) {
         int begin = QTime(0, 0).msecsTo(r.begin);
         int end = QTime(0, 0).msecsTo(r.end);
         return position >= begin && position <= end;
     };
-    auto iter = std::find_if(records.begin(), records.end(), std::bind(comp, _1, position));
+    auto iter = std::find_if(records.begin(), records.end(), comp);
     return iter - records.begin();
 }
 

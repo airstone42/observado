@@ -9,12 +9,13 @@ set(CMAKE_AUTOUIC ON)
 find_package(Python3 COMPONENTS Interpreter Development)
 find_package(Qt5 COMPONENTS Core Multimedia Widgets REQUIRED)
 
-add_executable(Observado
+set(SRC
         ui/main.cpp
         ui/mainwindow.cpp
         ui/mediawidget.cpp
-        ui/core.cpp
-        )
+        ui/core.cpp)
+
+add_executable(Observado ${SRC})
 
 target_link_libraries(Observado PRIVATE Python3::Module Python3::Python)
 target_link_libraries(Observado PRIVATE Qt5::Core Qt5::Multimedia Qt5::Widgets)

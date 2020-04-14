@@ -1,11 +1,12 @@
-#include "core.h"
-
 #include <QAbstractButton>
 #include <QAbstractSlider>
 #include <QBoxLayout>
 #include <QLabel>
+#include <QList>
 #include <QMediaPlayer>
+#include <QString>
 #include <QTableWidget>
+#include <QTime>
 #include <QUrl>
 #include <QtGlobal>
 #include <QtWidgets>
@@ -13,17 +14,28 @@
 #ifndef MEDIAWIDGET_H
 #define MEDIAWIDGET_H
 
+struct Record {
+    QTime begin;
+    QTime end;
+    QString chord;
+};
+
 class MediaWidget : public QWidget {
     Q_OBJECT
 public:
     explicit MediaWidget(QWidget *parent = nullptr);
 
     ~MediaWidget() override;
+
 public slots:
     void toggleOpen();
     void togglePlay();
     void toggleStop();
     void setPosition(qint64 position);
+    void handleResult(const QString &result);
+
+signals:
+    void readResult(const QString &result);
 
 private:
     void updateMedia(const QUrl &url);
@@ -31,9 +43,14 @@ private:
     void updatePosition(qint64 position);
     void updateDuration(qint64 duration);
     void setDurationLabel(qint64 duration);
-    void setTable(bool available);
+    void clearTable();
+    void setTable();
 
-    Core core;
+    void run();
+    bool parse(const QString &pyResult);
+    int search(qint64 position);
+
+    QList<Record> records;
 
     QBoxLayout *buttonLayout = nullptr;
     QBoxLayout *barLayout = nullptr;

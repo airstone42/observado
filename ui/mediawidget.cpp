@@ -3,6 +3,8 @@
 #include <QFileDialog>
 #include <QHBoxLayout>
 #include <QHeaderView>
+#include <QProcess>
+#include <QRegExp>
 #include <QSlider>
 #include <QStandardPaths>
 #include <QStyle>
@@ -11,11 +13,13 @@
 #include <QToolButton>
 #include <QVBoxLayout>
 #include <Qt>
+#include <QtGlobal>
 
 MediaWidget::MediaWidget(QWidget *parent)
     : QWidget(parent)
-    , core()
 {
+    connect(this, &MediaWidget::readResult, this, &MediaWidget::handleResult);
+
     fileLabel = new QLabel(parent);
 
     openButton = new QToolButton(parent);
@@ -104,6 +108,14 @@ void MediaWidget::setPosition(qint64 position)
         mediaPlayer->setPosition(position);
 }
 
+void MediaWidget::handleResult(const QString &result)
+{
+    records.clear();
+    clearTable();
+    if (parse(result))
+        setTable();
+}
+
 void MediaWidget::updateMedia(const QUrl &url)
 {
     fileUrl = url;
@@ -112,11 +124,9 @@ void MediaWidget::updateMedia(const QUrl &url)
     stopButton->setEnabled(true);
     positionSlider->setEnabled(true);
 
-    core.setUrl(fileUrl);
-    setTable(core.run());
+    run();
 
     mediaPlayer->setMedia(url);
-    mediaPlayer->play();
 }
 
 void MediaWidget::setIcon(QMediaPlayer::State previous)
@@ -133,7 +143,7 @@ void MediaWidget::updatePosition(qint64 position)
     auto time = QTime(0, 0).addMSecs(position);
     positionLabel->setText(time.toString("mm:ss"));
 
-    int index = core.search(position + 100);
+    int index = search(position + 100);
     if (index < recordTable->rowCount())
         recordTable->selectRow(index);
 }
@@ -152,15 +162,21 @@ void MediaWidget::setDurationLabel(qint64 duration)
     durationLabel->setText(time.toString("mm:ss"));
 }
 
-void MediaWidget::setTable(bool available)
+void MediaWidget::clearTable()
 {
     recordTable->setRowCount(0);
-    if (!available)
+}
+
+void MediaWidget::setTable()
+{
+    if (records.empty()) {
+        mediaPlayer->play();
         return;
+    }
 
     recordTable->setColumnCount(3);
     recordTable->setHorizontalHeaderLabels({ "begin", "end", "chord" });
-    for (const auto &item : core.records) {
+    for (const auto &item : records) {
         recordTable->insertRow(recordTable->rowCount());
 
         QStringList recordItems({ item.begin.toString("mm:ss.zzz"), item.end.toString("mm:ss.zzz"), item.chord });
@@ -170,6 +186,58 @@ void MediaWidget::setTable(bool available)
             recordTable->setItem(recordTable->rowCount() - 1, i, twi);
         }
     }
+    mediaPlayer->play();
+}
+
+void MediaWidget::run()
+{
+#ifdef WIN32
+    QString python = "python";
+    QStringList params { ".\\main.py" };
+#else
+    QString python = "python3";
+    QStringList params { "main.py" };
+#endif
+    auto process = new QProcess(this);
+    params << fileUrl.toLocalFile();
+
+    auto slot = [=](int exitCode, QProcess::ExitStatus exitStatus) {
+        auto result = QString(process->readAllStandardOutput());
+        emit readResult(result);
+    };
+    connect(process, QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished), slot);
+    process->start(python, params);
+}
+
+bool MediaWidget::parse(const QString &result)
+{
+    auto lines = result.split(QRegExp("[\r\n]"), QString::SkipEmptyParts);
+    if (lines.isEmpty())
+        return false;
+
+    for (const auto &line : lines) {
+        qDebug() << line;
+        auto words = line.split(' ');
+        if (words.size() != 3) {
+            records.clear();
+            return false;
+        }
+        auto begin = QTime(0, 0).addMSecs(static_cast<int>(words[0].toDouble() * 1000));
+        auto end = QTime(0, 0).addMSecs(static_cast<int>(words[1].toDouble() * 1000));
+        records.append(Record { begin, end, words[2] });
+    }
+    return true;
+}
+
+int MediaWidget::search(qint64 position)
+{
+    auto comp = [&](const Record &r) {
+        int begin = QTime(0, 0).msecsTo(r.begin);
+        int end = QTime(0, 0).msecsTo(r.end);
+        return position >= begin && position <= end;
+    };
+    auto iter = std::find_if(records.begin(), records.end(), comp);
+    return iter - records.begin();
 }
 
 MediaWidget::~MediaWidget() = default;

@@ -19,3 +19,7 @@ add_executable(Observado ${SRC})
 
 target_link_libraries(Observado PRIVATE Python3::Module Python3::Python)
 target_link_libraries(Observado PRIVATE Qt5::Core Qt5::Multimedia Qt5::Widgets)
+
+if (UNIX)
+    target_link_libraries(Observado PRIVATE pthread)
+endif ()

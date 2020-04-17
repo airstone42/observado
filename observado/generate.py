@@ -146,6 +146,7 @@ def wave_feature_generate():
                 # Less computation than librosa.effects.trim().
                 y, _ = librosa.load(wave_name, duration=duration - 2)
                 for method in storage.keys():
+                    y = librosa.effects.harmonic(y, margin=4)
                     chroma = utils.means(utils.chroma(y, method))
                     chroma = dict(zip(notes, chroma.tolist()))
                     extra['method'] = method

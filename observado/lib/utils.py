@@ -5,9 +5,6 @@ import numpy as np
 import scipy.ndimage
 import scipy.stats
 
-HARMONIC_MARGIN = 8
-CQT_MARGIN = 36
-
 note_values = {'C': 0, 'C#': 1, 'D': 2, 'D#': 3, 'E': 4, 'F': 5, 'F#': 6, 'G': 7, 'G#': 8, 'A': 9, 'A#': 10, 'B': 11}
 
 note_alts = {'Db': 'C#', 'Eb': 'D#', 'Gb': 'F#', 'Ab': 'G#', 'Bb': 'A#'}
@@ -66,8 +63,7 @@ def chroma(y: np.ndarray, method) -> np.ndarray:
 
 # Compute enhanced chromagram with CQT
 def _chroma_cqtx(y: np.ndarray) -> np.ndarray:
-    y_harm = librosa.effects.harmonic(y=y, margin=HARMONIC_MARGIN)
-    y = librosa.feature.chroma_cqt(y=y_harm, bins_per_octave=CQT_MARGIN)
+    y = librosa.feature.chroma_cqt(y=y, bins_per_octave=36)
     y = np.minimum(y, librosa.decompose.nn_filter(y, aggregate=np.median, metric='cosine'))
     y = scipy.ndimage.median_filter(y, size=(1, 9))
     return y

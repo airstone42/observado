@@ -1,9 +1,18 @@
+import os
 from typing import Optional
 
 import librosa
 import numpy as np
 import scipy.ndimage
 import scipy.stats
+
+dirname = os.path.dirname(__file__)
+basic = os.path.join(dirname, '../../data/features/basic.csv')
+noise = os.path.join(dirname, '../../data/features/noise.csv')
+enhanced_cqt = os.path.join(dirname, '../../data/features/wav_enhanced_cqt.csv')
+cqt = os.path.join(dirname, '../../data/features/wav_cqt.csv')
+stft = os.path.join(dirname, '../../data/features/wav_stft.csv')
+cens = os.path.join(dirname, '../../data/features/wav_cens.csv')
 
 note_values = {'C': 0, 'C#': 1, 'D': 2, 'D#': 3, 'E': 4, 'F': 5, 'F#': 6, 'G': 7, 'G#': 8, 'A': 9, 'A#': 10, 'B': 11}
 

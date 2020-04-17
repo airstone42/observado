@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 from __future__ import absolute_import, division, print_function, unicode_literals
 
-import os
 import sys
 
 import librosa
@@ -10,14 +9,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 import observado.lib.utils as utils
-
-dirname = os.path.dirname(__file__)
-basic = os.path.join(dirname, '../data/features/basic.csv')
-noise = os.path.join(dirname, '../data/features/noise.csv')
-enhanced_cqt = os.path.join(dirname, '../data/features/wav_enhanced_cqt.csv')
-cqt = os.path.join(dirname, '../data/features/wav_cqt.csv')
-stft = os.path.join(dirname, '../data/features/wav_stft.csv')
-cens = os.path.join(dirname, '../data/features/wav_cens.csv')
 
 
 def _load_data(wav_path) -> np.ndarray:
@@ -31,8 +22,8 @@ def _load_data(wav_path) -> np.ndarray:
     return weights
 
 
-def analyze_hmm(chroma: np.ndarray, show=False) -> (dict, dict):
-    weights = _load_data(enhanced_cqt)
+def analyze_hmm(chroma: np.ndarray, show=False) -> (list, list, list):
+    weights = _load_data(utils.enhanced_cqt)
     labels = [(lambda x, y: x + y if y != 'M' else x)(x, y) for y in ['M', 'm'] for x in utils.all_notes if
               x not in utils.note_alts.keys()]
     labels.append('N')
@@ -50,7 +41,7 @@ def analyze_hmm(chroma: np.ndarray, show=False) -> (dict, dict):
     frames.insert(0, 0)
     frames.append(len(chords_vit) - 1)
     chords = [labels[chords_vit[x]] for x in frames[:-1]]
-    return chords, librosa.frames_to_time(frames)
+    return chords, librosa.frames_to_time(frames), frames
 
 
 def show_hmm(chroma, weights, labels, probs, chords_vit, chords_ind):

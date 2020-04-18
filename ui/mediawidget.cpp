@@ -1,5 +1,7 @@
 #include "mediawidget.h"
 
+#include <QDir>
+#include <QFile>
 #include <QFileDialog>
 #include <QHBoxLayout>
 #include <QHeaderView>
@@ -191,12 +193,23 @@ void MediaWidget::setTable()
 
 void MediaWidget::run()
 {
+    QStringList params;
+#ifdef __FILE__
+    QDir dir(__FILE__);
+    if (dir.cdUp() && dir.cdUp()) {
+        QFile script(dir.filePath("main.py"));
+        if (script.exists())
+            params << script.fileName();
+    }
+#endif
 #ifdef WIN32
     QString python = "python";
-    QStringList params { ".\\main.py" };
+    if (params.isEmpty())
+        params << ".\\main.py";
 #else
     QString python = "python3";
-    QStringList params { "main.py" };
+    if (params.isEmpty())
+        params << "main.py";
 #endif
     auto process = new QProcess(this);
     params << fileUrl.toLocalFile();

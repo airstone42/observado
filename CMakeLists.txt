@@ -12,7 +12,8 @@ find_package(Qt5 COMPONENTS Core Multimedia Widgets REQUIRED)
 set(SRC
         ui/main.cpp
         ui/mainwindow.cpp
-        ui/mediawidget.cpp)
+        ui/mediawidget.cpp
+        ui/chorddata.cpp)
 
 add_executable(Observado ${SRC})
 

@@ -1,4 +1,5 @@
 #include "mediawidget.h"
+#include "chorddata.h"
 
 #include <QDir>
 #include <QFile>
@@ -146,8 +147,20 @@ void MediaWidget::updatePosition(qint64 position)
     positionLabel->setText(time.toString("mm:ss"));
 
     int index = search(position + 100);
-    if (index < recordTable->rowCount())
+    if (index < recordTable->rowCount()) {
         recordTable->selectRow(index);
+        if (currentChord.isEmpty() || currentChord != records[index].chord)
+            currentChord = records[index].chord;
+        else
+            return;
+        ChordData chordData(records[index].chord.toStdString());
+        auto debug = qDebug();
+        debug << std::string(chordData).c_str() << "[";
+        auto components = chordData.components();
+        for (const auto &component : components)
+            debug << component;
+        debug << "]" << endl;
+    }
 }
 
 void MediaWidget::updateDuration(qint64 duration)

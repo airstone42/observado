@@ -51,6 +51,7 @@ private:
     int search(qint64 position);
 
     QList<Record> records;
+    QString currentChord;
 
     QBoxLayout *buttonLayout = nullptr;
     QBoxLayout *barLayout = nullptr;

@@ -18,6 +18,10 @@
 #include <Qt>
 #include <QtGlobal>
 
+const char *MediaWidget::CHORD_STYLE = "font: 32pt; margin: 8px";
+const char *MediaWidget::NOTE_SPECIAL_STYLE = "font: bold 16pt; color: black; margin: 4px";
+const char *MediaWidget::NOTE_NORMAL_STYLE = "font: 16pt; color: gray; margin: 4px";
+
 MediaWidget::MediaWidget(QWidget *parent)
     : QWidget(parent)
 {
@@ -43,8 +47,8 @@ MediaWidget::MediaWidget(QWidget *parent)
     positionSlider->setDisabled(true);
     connect(positionSlider, &QAbstractSlider::valueChanged, this, &MediaWidget::setPosition);
 
-    positionLabel = new QLabel(tr("--:--"), this);
-    durationLabel = new QLabel(tr("--:--"), this);
+    positionLabel = new QLabel(tr("--:--"), parent);
+    durationLabel = new QLabel(tr("--:--"), parent);
 
     mediaPlayer = new QMediaPlayer(parent);
     mediaPlayer->setVolume(50);
@@ -67,6 +71,22 @@ MediaWidget::MediaWidget(QWidget *parent)
     barLayout->addWidget(positionSlider);
     barLayout->addWidget(durationLabel);
 
+    chordLabel = new QLabel(parent);
+    chordLabel->setStyleSheet(CHORD_STYLE);
+
+    for (auto &note : QList<QString>({ "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B" })) {
+        auto noteLabel = new QLabel(note, parent);
+        noteLabel->setStyleSheet(NOTE_NORMAL_STYLE);
+        noteList.append(noteLabel);
+    }
+
+    chordLayout = new QVBoxLayout(parent);
+    auto notesLayout = new QHBoxLayout(parent);
+    for (auto note : noteList)
+        notesLayout->addWidget(note);
+    chordLayout->addWidget(chordLabel, 0, Qt::AlignHCenter);
+    chordLayout->addLayout(notesLayout);
+
     tableLayout = new QVBoxLayout(parent);
     tableLayout->addWidget(recordTable);
 
@@ -74,6 +94,7 @@ MediaWidget::MediaWidget(QWidget *parent)
     mainLayout->addWidget(fileLabel, 0, Qt::AlignHCenter);
     mainLayout->addLayout(buttonLayout);
     mainLayout->addLayout(barLayout);
+    mainLayout->addLayout(chordLayout);
     mainLayout->addLayout(tableLayout);
     this->setLayout(mainLayout);
 }
@@ -153,13 +174,23 @@ void MediaWidget::updatePosition(qint64 position)
             currentChord = records[index].chord;
         else
             return;
+        chordLabel->setText(currentChord);
+
+        if (records[index].chord.toStdString() == "N") {
+            for (auto label : noteList)
+                label->setStyleSheet(NOTE_NORMAL_STYLE);
+            return;
+        }
+
         ChordData chordData(records[index].chord.toStdString());
-        auto debug = qDebug();
-        debug << std::string(chordData).c_str() << "[";
         auto components = chordData.components();
-        for (const auto &component : components)
-            debug << component;
-        debug << "]" << endl;
+        auto first = components.begin();
+        for (auto component = components.begin(); component != components.end(); ++component) {
+            if (*component)
+                noteList[component - first]->setStyleSheet(NOTE_SPECIAL_STYLE);
+            else
+                noteList[component - first]->setStyleSheet(NOTE_NORMAL_STYLE);
+        }
     }
 }
 

@@ -50,10 +50,16 @@ private:
     bool parse(const QString &pyResult);
     int search(qint64 position);
 
+    static const char *CHORD_STYLE;
+    static const char *NOTE_SPECIAL_STYLE;
+    static const char *NOTE_NORMAL_STYLE;
+
     QList<Record> records;
     QString currentChord;
+    QList<QLabel *> noteList;
 
     QBoxLayout *buttonLayout = nullptr;
+    QBoxLayout *chordLayout = nullptr;
     QBoxLayout *barLayout = nullptr;
     QBoxLayout *tableLayout = nullptr;
     QBoxLayout *mainLayout = nullptr;
@@ -63,6 +69,7 @@ private:
     QAbstractButton *playButton = nullptr;
     QAbstractButton *stopButton = nullptr;
     QAbstractSlider *positionSlider = nullptr;
+    QLabel *chordLabel = nullptr;
     QLabel *positionLabel = nullptr;
     QLabel *durationLabel = nullptr;
     QTableWidget *recordTable = nullptr;

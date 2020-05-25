@@ -19,6 +19,7 @@
 #include <QtGlobal>
 
 const char *MediaWidget::CHORD_STYLE = "font: 32pt; margin: 8px";
+const char *MediaWidget::CALC_STYLE = "font: 16pt; margin: 4px";
 const char *MediaWidget::NOTE_SPECIAL_STYLE = "font: bold 16pt; color: black; margin: 4px";
 const char *MediaWidget::NOTE_NORMAL_STYLE = "font: 16pt; color: gray; margin: 4px";
 
@@ -259,11 +260,15 @@ void MediaWidget::run()
     params << fileUrl.toLocalFile();
 
     auto slot = [=](int exitCode, QProcess::ExitStatus exitStatus) {
+        chordLabel->setStyleSheet(CHORD_STYLE);
+        chordLabel->setText("");
         auto result = QString(process->readAllStandardOutput());
         emit readResult(result);
     };
     connect(process, QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished), slot);
     process->start(python, params);
+    chordLabel->setStyleSheet(CALC_STYLE);
+    chordLabel->setText("Calculating...");
 }
 
 bool MediaWidget::parse(const QString &result)

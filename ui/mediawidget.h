@@ -51,6 +51,7 @@ private:
     int search(qint64 position);
 
     static const char *CHORD_STYLE;
+    static const char *CALC_STYLE;
     static const char *NOTE_SPECIAL_STYLE;
     static const char *NOTE_NORMAL_STYLE;
 

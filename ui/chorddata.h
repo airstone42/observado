@@ -19,6 +19,7 @@ public:
     std::vector<int> components();
 
     static std::unordered_map<std::string, int> note_values;
+
 private:
     std::tuple<std::string, std::string> chord_data_;
 

@@ -48,8 +48,8 @@ MediaWidget::MediaWidget(QWidget *parent)
     positionSlider->setDisabled(true);
     connect(positionSlider, &QAbstractSlider::valueChanged, this, &MediaWidget::setPosition);
 
-    positionLabel = new QLabel(tr("--:--"), parent);
-    durationLabel = new QLabel(tr("--:--"), parent);
+    positionLabel = new QLabel("--:--", parent);
+    durationLabel = new QLabel("--:--", parent);
 
     mediaPlayer = new QMediaPlayer(parent);
     mediaPlayer->setVolume(50);

@@ -18,10 +18,10 @@
 #include <Qt>
 #include <QtGlobal>
 
-const char *MediaWidget::CHORD_STYLE = "font: 32pt; margin: 8px";
-const char *MediaWidget::CALC_STYLE = "font: 16pt; margin: 4px";
-const char *MediaWidget::NOTE_SPECIAL_STYLE = "font: bold 16pt; color: black; margin: 4px";
-const char *MediaWidget::NOTE_NORMAL_STYLE = "font: 16pt; color: gray; margin: 4px";
+const char *MediaWidget::CHORD_STYLE = "font: 24pt; margin: 8px";
+const char *MediaWidget::CALC_STYLE = "font: 12pt; margin: 4px";
+const char *MediaWidget::NOTE_SPECIAL_STYLE = "font: bold 12pt; color: black; margin: 4px";
+const char *MediaWidget::NOTE_NORMAL_STYLE = "font: 12pt; color: gray; margin: 4px";
 
 MediaWidget::MediaWidget(QWidget *parent)
     : QWidget(parent)

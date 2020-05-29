@@ -3,7 +3,8 @@
 #include <algorithm>
 #include <stdexcept>
 
-std::regex ChordData::pattern_("([A-G|a-g][#|b]?)([7|maj7]?sus[2|4]?|ø7?|mmaj7|maj7|m|9|11|13|[aug|dim]?[7|maj7]?)");
+// Only matches suffix "7", "maj7", "m" and "m7", or simply without suffix.
+std::regex ChordData::pattern_("([A-G|a-g][#|b]?)(maj7|m7?|7?)");
 
 std::unordered_map<std::string, int> ChordData::note_values({ { "C", 0 },
     { "C#", 1 },

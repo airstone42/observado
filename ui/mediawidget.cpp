@@ -236,6 +236,9 @@ void MediaWidget::setTable()
     mediaPlayer->play();
 }
 
+// Non-blocking by child process.
+// I failed when trying multithreading with condition variables.
+// This may not be the best practice.
 void MediaWidget::run()
 {
     QStringList params;

@@ -75,6 +75,8 @@ def midi_generate():
         return
 
     print('Generating MIDI files...')
+    # Because of the lock when appending to list, multithreading here is useless.
+    # Need to be optimized.
     multi_run(generate, all_chords)
 
 
@@ -110,6 +112,8 @@ def wave_generate():
         return
 
     print('Generating WAV files...')
+    # Because of the lock when appending to list, multithreading here is useless.
+    # Need to be optimized.
     multi_run(generate, all_chords)
 
     # Fix 'ø7' filename after generation.

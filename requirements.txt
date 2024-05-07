@@ -1,4 +1,4 @@
-tqdm==4.45.0
+tqdm==4.66.3
 joblib==1.2.0
 librosa==0.7.2
 scipy==1.10.0
